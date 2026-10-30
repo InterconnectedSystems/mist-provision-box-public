@@ -10,7 +10,7 @@ macOS or Linux. Nothing else needs to be installed: no Python and no server. It 
 
 ## 1. Get the release ZIP
 
-Download **`mist-provision-box.zip`** from the
+Download **[`mist-provision-box.zip`](https://github.com/InterconnectedSystems/mist-provision-box-public/releases/latest/download/mist-provision-box.zip)** (the latest release) from the
 [Releases page](https://github.com/InterconnectedSystems/mist-provision-box-public/releases/latest), or
 with the GitHub CLI:
 
