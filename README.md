@@ -4,6 +4,35 @@
   <a href="https://github.com/InterconnectedSystems/mist-provision-box-public/releases/latest/download/mist-provision-box.zip"><img src=".github/download-button.svg" alt="Download mist-provision-box.zip (latest release)" width="440"></a>
 </p>
 
+## Install in four steps
+
+Chrome or Edge, on Windows, macOS or Linux. It installs alongside the read-only Mist Toolbox.
+
+1. **Download** [`mist-provision-box.zip`](https://github.com/InterconnectedSystems/mist-provision-box-public/releases/latest/download/mist-provision-box.zip) with the button above (always the latest
+   release) and unzip it somewhere permanent: the browser runs the extension from that folder.
+2. Open `chrome://extensions` (or `edge://extensions`) and turn on **Developer mode**.
+3. Click **Load unpacked** and select the unzipped **`mist-provision-box`** folder.
+4. Pin the icon, click it, choose your Mist region, paste an API token (a read-only Observer token
+   is recommended) and click **Validate token**.
+
+**Updating:** replace the files in your `mist-provision-box` folder with the new ones and press the
+reload arrow on the extension's card (copy any tools you added from `tools/` first). Other ways to
+get it (the [Releases page](https://github.com/InterconnectedSystems/mist-provision-box-public/releases/latest), `gh release download -R InterconnectedSystems/mist-provision-box-public -p mist-provision-box.zip`),
+updating and troubleshooting: **[INSTALL.md](INSTALL.md)**.
+
+> [!WARNING]
+> **Use at your own risk.** Mist Provision Box includes tools that **make changes** to your Juniper
+> Mist organization (firmware upgrades, banned and approved client lists, WLAN settings), and it
+> lets you install your own tools and tools written by others or by an AI assistant.
+> **InterconnectedSystems is not responsible for any misuse of this software, including malicious
+> or unauthorized use of any tool, built in or added**, or for any outage, data loss or other
+> damage that follows from running a tool. Read a tool before you install it, run it only against
+> organizations you are authorized to change, and use a read-only (Observer) token unless you mean
+> to make changes. The software is provided "as is", without warranty of any kind, under the
+> [MIT License](LICENSE).
+
+## About
+
 **Juniper Mist and Juniper SSR tools in a browser extension: read-only reporting by default,
 and tools that make changes when you need them.** Mist Provision Box is the write-enabled
 edition of Mist Toolbox. Paste a Mist API token, pick an org (and optionally one site), pick a
@@ -14,11 +43,6 @@ changes, built in or added by you, is labelled **Makes changes**, warned about w
 it, and asks for confirmation before it runs.
 There is no Python, no server and no install beyond the extension, and the extension ships its
 own **LLM spec**, so any AI assistant can turn a script or a one-line idea into a new tool.
-
-The **Download** button above always gets the latest release's
-[`mist-provision-box.zip`](https://github.com/InterconnectedSystems/mist-provision-box-public/releases/latest/download/mist-provision-box.zip), ready for **Load unpacked**. It is also on the
-[Releases page](https://github.com/InterconnectedSystems/mist-provision-box-public/releases/latest). It
-installs alongside the read-only Mist Toolbox. Full steps: **[INSTALL.md](INSTALL.md)**.
 
 **[Install guide](INSTALL.md)** · **[Add your own tools](ADDING_TOOLS.md)** · [All releases](https://github.com/InterconnectedSystems/mist-provision-box-public/releases/latest) · [Extension README](mist-toolbox/README.md)
 
@@ -139,22 +163,6 @@ read-only report (the default) and a tool that makes changes.
 ![The new tool in the menu, marked added](mist-toolbox/docs/screenshots/20-home-added-tool.png)
 
 The full walkthrough with screenshots is in **[ADDING_TOOLS.md](ADDING_TOOLS.md)**.
-
-## Install
-
-Chrome or Edge, on Windows, macOS or Linux:
-
-1. Download **[`mist-provision-box.zip`](https://github.com/InterconnectedSystems/mist-provision-box-public/releases/latest/download/mist-provision-box.zip)** from the
-   [Releases page](https://github.com/InterconnectedSystems/mist-provision-box-public/releases/latest)
-   or run
-   `gh release download -R InterconnectedSystems/mist-provision-box-public -p mist-provision-box.zip`.
-   Unzip it somewhere permanent (the browser runs the extension from that folder).
-2. Open `chrome://extensions` (or `edge://extensions`) and turn on **Developer mode**.
-3. **Load unpacked** → select the unzipped **`mist-provision-box`** folder.
-4. Pin the icon, click it, choose your region, paste an API token (a read-only Observer token is
-   recommended), **Validate**.
-
-Details, updating and troubleshooting: **[INSTALL.md](INSTALL.md)**.
 
 ## Screenshots
 
