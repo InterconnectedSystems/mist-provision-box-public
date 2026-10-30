@@ -11,6 +11,11 @@ const SITES = [
   { id: "site-hq", name: "HQ - Toronto", networktemplate_id: "swtpl-campus", address: "100 Example Ave, Toronto ON", country_code: "CA", timezone: "America/Toronto" },
   { id: "site-ott", name: "Branch - Ottawa", networktemplate_id: "swtpl-campus", address: "20 Sample St, Ottawa ON", country_code: "CA", timezone: "America/Toronto" },
   { id: "site-mtl", name: "Warehouse - Montreal", networktemplate_id: "swtpl-branch", address: "5 Demo Rd, Montreal QC", country_code: "CA", timezone: "America/Toronto" },
+  { id: "site-van", name: "DC - Vancouver", networktemplate_id: "swtpl-campus", address: "1 Placeholder Way, Vancouver BC", country_code: "CA", timezone: "America/Vancouver" },
+  { id: "site-cgy", name: "Branch - Calgary", networktemplate_id: "swtpl-campus", address: "40 Example Blvd, Calgary AB", country_code: "CA", timezone: "America/Edmonton" },
+  { id: "site-hfx", name: "Branch - Halifax", networktemplate_id: "swtpl-branch", address: "9 Sample Wharf, Halifax NS", country_code: "CA", timezone: "America/Halifax" },
+  { id: "site-wpg", name: "Store - Winnipeg", networktemplate_id: "swtpl-branch", address: "300 Demo Ave, Winnipeg MB", country_code: "CA", timezone: "America/Winnipeg" },
+  { id: "site-qc", name: "Store - Quebec City", networktemplate_id: "swtpl-branch", address: "12 Rue Exemple, Quebec QC", country_code: "CA", timezone: "America/Toronto" },
 ];
 
 const NOW = 1760000000; // fixed, so every regeneration matches
@@ -25,6 +30,16 @@ const SWITCHES = [
   { id: "dev-idf2", site: "site-hq", name: "hq-idf-2", model: "EX2300-48P", serial: "DEMO2300B2", mac: mac(0x112), version: "22.4R3-S2", status: "connected", ip: "10.10.0.12" },
   { id: "dev-ott", site: "site-ott", name: "ott-sw1", model: "EX4100-24P", serial: "DEMO4100C1", mac: mac(0x201), version: "23.4R2-S3", status: "connected", ip: "10.20.0.2" },
   { id: "dev-mtl", site: "site-mtl", name: "mtl-sw1", model: "EX2300-C-12P", serial: "DEMO2300D1", mac: mac(0x301), version: "21.4R3-S5", status: "disconnected", ip: "10.30.0.2" },
+  { id: "dev-van1", site: "site-van", name: "van-core-1", model: "EX4650-48Y", serial: "DEMO4650E1", mac: mac(0x401), version: "23.4R2-S3", status: "connected", ip: "10.40.0.2" },
+  { id: "dev-van2", site: "site-van", name: "van-core-2", model: "EX4650-48Y", serial: "DEMO4650E2", mac: mac(0x402), version: "23.4R2-S3", status: "connected", ip: "10.40.0.3" },
+  { id: "dev-van3", site: "site-van", name: "van-acc-1", model: "EX4100-48P", serial: "DEMO4100E3", mac: mac(0x403), version: "23.4R2-S3", status: "connected", ip: "10.40.0.11" },
+  { id: "dev-van4", site: "site-van", name: "van-acc-2", model: "EX4100-48P", serial: "DEMO4100E4", mac: mac(0x404), version: "22.4R3-S2", status: "disconnected", ip: "10.40.0.12" },
+  { id: "dev-cgy1", site: "site-cgy", name: "cgy-sw1", model: "EX4100-24P", serial: "DEMO4100F1", mac: mac(0x411), version: "23.4R2-S3", status: "connected", ip: "10.50.0.2" },
+  { id: "dev-cgy2", site: "site-cgy", name: "cgy-sw2", model: "EX2300-24P", serial: "DEMO2300F2", mac: mac(0x412), version: "21.4R3-S5", status: "disconnected", ip: "10.50.0.3" },
+  { id: "dev-hfx", site: "site-hfx", name: "hfx-sw1", model: "EX2300-C-12P", serial: "DEMO2300G1", mac: mac(0x421), version: "22.4R3-S2", status: "connected", ip: "10.60.0.2" },
+  { id: "dev-wpg1", site: "site-wpg", name: "wpg-sw1", model: "EX2300-C-12P", serial: "DEMO2300H1", mac: mac(0x431), version: "21.4R3-S5", status: "disconnected", ip: "10.70.0.2" },
+  { id: "dev-wpg2", site: "site-wpg", name: "wpg-sw2", model: "EX4100-F-12P", serial: "DEMO4100H2", mac: mac(0x432), version: "23.4R2-S3", status: "connected", ip: "10.70.0.3" },
+  { id: "dev-qc", site: "site-qc", name: "qc-sw1", model: "EX2300-24P", serial: "DEMO2300J1", mac: mac(0x441), version: "22.4R3-S2", status: "connected", ip: "10.80.0.2" },
 ];
 
 const IRB = {
@@ -32,6 +47,10 @@ const IRB = {
   "dev-ott": [["data", 10, "10.20.10.1/24"], ["voice", 20, "10.20.20.1/24"]],
   // Deliberately reuses HQ's printer subnet, so the report flags a duplicate.
   "dev-mtl": [["data", 10, "10.30.10.1/24"], ["printers", 30, "10.10.30.1/24"]],
+  "dev-van1": [["data", 10, "10.40.10.1/24"], ["voice", 20, "10.40.20.1/24"], ["servers", 40, "10.40.40.1/24"], ["storage", 41, "10.40.41.1/24"]],
+  "dev-cgy1": [["data", 10, "10.50.10.1/24"], ["voice", 20, "10.50.20.1/24"]],
+  "dev-hfx": [["data", 10, "10.60.10.1/24"]],
+  "dev-qc": [["data", 10, "10.80.10.1/24"], ["guest", 99, "192.168.99.1/24"]],
 };
 
 function configCmd(sw) {
@@ -57,14 +76,24 @@ function configCmd(sw) {
   return lines;
 }
 
-// Power supplies per VC member (Switch PSU Status): hq-core's backup member has
-// lost a supply, hq-idf-1 has an empty slot, mtl-sw1 is a single-PSU model.
+// Power supplies per VC member (Switch PSU Status): hq-core's backup member and
+// van-core-2 have lost a supply, hq-idf-1 and cgy-sw2 have an empty slot, the
+// compact EX2300-C models have one PSU, and wpg-sw2 reports no PSU data.
 const PSUS = {
   "dev-core": [["ok", "ok"], ["ok", "Failed"]],
   "dev-idf1": [["ok", "absent"]],
   "dev-idf2": [["ok", "ok"]],
   "dev-ott": [["ok", "ok"]],
   "dev-mtl": [["ok"]],
+  "dev-van1": [["ok", "ok"]],
+  "dev-van2": [["Failed", "ok"]],
+  "dev-van3": [["ok", "ok"]],
+  "dev-van4": [["ok", "ok"]],
+  "dev-cgy1": [["ok", "ok"]],
+  "dev-cgy2": [["ok", "absent"]],
+  "dev-hfx": [["ok"]],
+  "dev-wpg1": [["ok"]],
+  "dev-qc": [["ok", "ok"]],
 };
 const psus = (id, fpc) => (PSUS[id]?.[fpc] || []).map((status, i) => ({ name: `Power Supply ${i}`, status }));
 
@@ -113,6 +142,11 @@ const OTHER_DEVICES = [
   ...Array.from({ length: 14 }, (_, i) => ({ type: "ap", mac: mac(0x600 + i), model: "AP45", site_id: "site-hq", connected: i !== 9 })),
   ...Array.from({ length: 5 }, (_, i) => ({ type: "ap", mac: mac(0x700 + i), model: "AP34", site_id: "site-ott", connected: true })),
   ...Array.from({ length: 3 }, (_, i) => ({ type: "ap", mac: mac(0x800 + i), model: "AP24", site_id: "site-mtl", connected: i !== 2 })),
+  ...Array.from({ length: 8 }, (_, i) => ({ type: "ap", mac: mac(0x810 + i), model: "AP45", site_id: "site-van", connected: i !== 6 })),
+  ...Array.from({ length: 4 }, (_, i) => ({ type: "ap", mac: mac(0x820 + i), model: "AP34", site_id: "site-cgy", connected: true })),
+  ...Array.from({ length: 2 }, (_, i) => ({ type: "ap", mac: mac(0x830 + i), model: "AP24", site_id: "site-hfx", connected: true })),
+  ...Array.from({ length: 3 }, (_, i) => ({ type: "ap", mac: mac(0x840 + i), model: "AP34", site_id: "site-wpg", connected: i !== 0 })),
+  ...Array.from({ length: 3 }, (_, i) => ({ type: "ap", mac: mac(0x850 + i), model: "AP34", site_id: "site-qc", connected: true })),
   { type: "gateway", mac: mac(0x150), model: "SRX320", site_id: "site-hq", connected: true },
   { type: "gateway", mac: mac(0x250), model: "SSR120", site_id: "site-ott", connected: true },
   { type: "ap", mac: mac(0x999), model: "AP45", connected: false },
@@ -127,6 +161,8 @@ const PORT_USAGES = {
 const DEVICE_CLI = {
   "dev-core": ["set protocols mstp bridge-priority 4k", "set chassis aggregated-devices ethernet device-count 8"],
   "dev-mtl": ["set poe interface ge-0/0/3 disable"],
+  "dev-van1": ["set protocols mstp bridge-priority 0", "set forwarding-options storm-control-profiles default all"],
+  "dev-wpg1": ["set poe interface ge-0/0/3 disable"],
 };
 
 function siteDevice(sw) {
@@ -156,6 +192,11 @@ const SITE_SETTING = {
     switch_matching: { enable: true, rules: [{ name: "core", match_role: "core", additional_config_cmds: ["set protocols ospf area 0.0.0.0 interface irb.10 passive"] }] } },
   "site-ott": { additional_config_cmds: ["set snmp location \"Branch - Ottawa\"", "set system ntp server 192.0.2.123"] },
   "site-mtl": {},
+  "site-van": { additional_config_cmds: ["set snmp location \"DC - Vancouver, Hall B\"", "set system syslog host 192.0.2.11 any notice"] },
+  "site-cgy": { additional_config_cmds: ["set snmp location \"Branch - Calgary\""] },
+  "site-hfx": {},
+  "site-wpg": { additional_config_cmds: ["set snmp location \"Store - Winnipeg\""] },
+  "site-qc": {},
 };
 
 const WLANS = {
@@ -173,6 +214,9 @@ const WLANS = {
     { id: "w-scan", ssid: "DemoScanners", enabled: false, auth: { type: "psk", pairwise: ["wpa2-ccmp"] }, vlan_enabled: false, band: "24", interface: "all", site_id: "site-mtl" },
   ],
 };
+for (const site of ["site-van", "site-cgy", "site-hfx", "site-wpg", "site-qc"]) WLANS[site] = WLANS["site-ott"];
+WLANS["site-wpg"] = [...WLANS["site-ott"],
+  { id: "w-pos", ssid: "DemoPOS", enabled: true, hide_ssid: true, auth: { type: "psk", pairwise: ["wpa3"] }, vlan_enabled: true, vlan_id: 50, bands: ["5"], interface: "all", site_id: "site-wpg" }];
 
 const NAMES = ["alex", "blair", "casey", "devon", "emery", "finley", "gray", "harper", "indigo", "jordan", "kai", "logan"];
 function clients(siteId, count, subnet) {
@@ -190,7 +234,9 @@ function clients(siteId, count, subnet) {
     };
   });
 }
-const CLIENTS = { "site-hq": clients("site-hq", 9, 10), "site-ott": clients("site-ott", 5, 20), "site-mtl": clients("site-mtl", 3, 30) };
+const CLIENTS = { "site-hq": clients("site-hq", 9, 10), "site-ott": clients("site-ott", 5, 20), "site-mtl": clients("site-mtl", 3, 30),
+  "site-van": clients("site-van", 7, 40), "site-cgy": clients("site-cgy", 4, 50), "site-hfx": clients("site-hfx", 2, 60),
+  "site-wpg": clients("site-wpg", 3, 70), "site-qc": clients("site-qc", 3, 80) };
 
 // SSID Banned / Approved Clients: the org's template SSIDs, HQ's own SSID, and a
 // banned list already set at HQ (read back through the blacklist_url Mist gives).
@@ -280,6 +326,53 @@ function phyEvents() {
   ];
 }
 
+// ---- BGP (BGP Sessions) --------------------------------------------------------
+// hq-core runs EVPN to a spine (one session idle), every site has a WAN edge,
+// and the Montreal SRX's IPsec path to HQ is down.
+
+const GATEWAYS = [
+  { site: "site-hq", name: "hq-ssr", model: "SSR130", mac: mac(0x701) },
+  { site: "site-ott", name: "ott-ssr", model: "SSR120", mac: mac(0x702) },
+  { site: "site-mtl", name: "mtl-srx", model: "SRX320", mac: mac(0x703) },
+  { site: "site-van", name: "van-ssr", model: "SSR130", mac: mac(0x704) },
+  { site: "site-cgy", name: "cgy-ssr", model: "SSR120", mac: mac(0x705) },
+];
+const gatewayStats = (gw) => ({ type: "gateway", status: "connected", site_id: gw.site, name: gw.name, model: gw.model, mac: gw.mac });
+
+const bgpRow = (dev, site, o) => ({ mac: dev, site_id: site, vrf_name: "default", local_as: 65010, timestamp: NOW - 60, up: true,
+  state: "established", rx_routes: 42, tx_routes: 18, rx_pkts: 182340, tx_pkts: 181977, flap_count: 0, uptime: 1814400, ...o });
+const BGP_PEERS = [
+  bgpRow(mac(0x101), "site-hq", { neighbor: "10.255.1.1", neighbor_as: 65001, evpn_overlay: true, router_id: "10.255.0.2" }),
+  bgpRow(mac(0x101), "site-hq", { neighbor: "10.255.1.3", neighbor_as: 65001, evpn_overlay: true, router_id: "10.255.0.2",
+    state: "idle", up: false, rx_routes: 0, tx_routes: 0, flap_count: 7, uptime: 0 }),
+  bgpRow(mac(0x101), "site-hq", { neighbor: "10.10.0.1", neighbor_as: 65100, router_id: "10.255.0.2", rx_routes: 3, tx_routes: 4 }),
+  bgpRow(mac(0x201), "site-ott", { neighbor: "10.20.0.1", neighbor_as: 65100, local_as: 65020, rx_routes: 3, tx_routes: 2, uptime: 21600 }),
+  bgpRow(mac(0x701), "site-hq", { neighbor: "203.0.113.1", neighbor_as: 64496, local_as: 65100, vrf_name: "internet", rx_routes: 1, tx_routes: 6, node: "node0" }),
+  bgpRow(mac(0x701), "site-hq", { neighbor: "10.10.0.2", neighbor_as: 65010, local_as: 65100, vrf_name: "corp", rx_routes: 4, tx_routes: 3, node: "node0" }),
+  bgpRow(mac(0x702), "site-ott", { neighbor: "198.51.100.1", neighbor_as: 64497, local_as: 65100, vrf_name: "internet", rx_routes: 1, tx_routes: 4 }),
+  bgpRow(mac(0x703), "site-mtl", { neighbor: "192.0.2.65", neighbor_as: 64498, local_as: 65100, vrf_name: "internet",
+    state: "active", up: false, rx_routes: 0, tx_routes: 0, flap_count: 3, uptime: 0 }),
+  bgpRow(mac(0x401), "site-van", { neighbor: "10.40.0.1", neighbor_as: 65100, local_as: 65040, rx_routes: 6, tx_routes: 9, uptime: 2592000 }),
+  bgpRow(mac(0x704), "site-van", { neighbor: "203.0.113.129", neighbor_as: 64499, local_as: 65100, vrf_name: "internet", rx_routes: 1, tx_routes: 8 }),
+  bgpRow(mac(0x705), "site-cgy", { neighbor: "198.51.100.129", neighbor_as: 64500, local_as: 65100, vrf_name: "internet", rx_routes: 1, tx_routes: 3, flap_count: 2, uptime: 5400 }),
+];
+
+const path = (gw, peer, o) => ({ mac: gw.mac, site_id: gw.site, router_name: gw.name, peer_mac: peer.mac, peer_site_id: peer.site,
+  peer_router_name: peer.name, type: "svr", up: true, is_active: true, latency: 14, jitter: 1.2, loss: 0, mos: 4.4, mtu: 1500,
+  uptime: 1209600, last_seen: NOW - 30, ...o });
+const [GW_HQ, GW_OTT, GW_MTL, GW_VAN, GW_CGY] = GATEWAYS;
+const VPN_PEERS = [
+  path(GW_HQ, GW_OTT, { port_id: "ge-0/0/0", peer_port_id: "ge-0/0/0" }),
+  path(GW_HQ, GW_OTT, { port_id: "ge-0/0/1", peer_port_id: "ge-0/0/1", is_active: false, latency: 31, jitter: 6.8, loss: 1.6, mos: 3.7 }),
+  path(GW_OTT, GW_HQ, { port_id: "ge-0/0/0", peer_port_id: "ge-0/0/0", latency: 15 }),
+  path(GW_MTL, GW_HQ, { type: "ipsec", port_id: "ge-0/0/0", peer_port_id: "ge-0/0/0", up: false, is_active: false,
+    latency: "", jitter: "", loss: "", mos: "", uptime: 0, last_seen: NOW - 5400 }),
+  path(GW_VAN, GW_HQ, { port_id: "ge-0/0/0", peer_port_id: "ge-0/0/0", latency: 62, jitter: 2.1, mos: 4.3 }),
+  path(GW_CGY, GW_VAN, { port_id: "ge-0/0/0", peer_port_id: "ge-0/0/0", latency: 21, jitter: 1.4, mos: 4.4 }),
+  path(GW_HQ, GW_MTL, { type: "ipsec", port_id: "ge-0/0/0", peer_port_id: "ge-0/0/0", up: false, is_active: false,
+    latency: "", jitter: "", loss: "", mos: "", uptime: 0, last_seen: NOW - 5400 }),
+];
+
 // ---- Alarms -----------------------------------------------------------------
 
 const ALARM_DEFS = [
@@ -287,6 +380,7 @@ const ALARM_DEFS = [
   { key: "ap_bad_cable", display: "AP bad cable", severity: "warn", group: "infrastructure" },
   { key: "dhcp_failure", display: "DHCP failure", severity: "major", group: "infrastructure" },
   { key: "rogue_ap", display: "Rogue AP detected", severity: "minor", group: "security" },
+  { key: "sw_psu_failure", display: "Switch power supply failure", severity: "critical", group: "infrastructure" },
 ];
 const ALARMS = {
   "site-hq": [
@@ -298,6 +392,17 @@ const ALARMS = {
   ],
   "site-mtl": [
     { id: "al-4", type: "switch_offline", timestamp: NOW - 86000, last_seen: NOW - 120, count: 1, switches: [mac(0x301)], hostnames: ["mtl-sw1"], status: "open", acked: false },
+  ],
+  "site-van": [
+    { id: "al-5", type: "sw_psu_failure", timestamp: NOW - 14400, last_seen: NOW - 300, count: 1, switches: [mac(0x402)], hostnames: ["van-core-2"], reasons: ["Power Supply 0 failed"], status: "open", acked: false },
+    { id: "al-6", type: "switch_offline", timestamp: NOW - 10800, last_seen: NOW - 300, count: 1, switches: [mac(0x404)], hostnames: ["van-acc-2"], status: "open", acked: true, ack_admin_name: "Demo Admin" },
+  ],
+  "site-cgy": [
+    { id: "al-7", type: "switch_offline", timestamp: NOW - 172000, last_seen: NOW - 600, count: 1, switches: [mac(0x412)], hostnames: ["cgy-sw2"], status: "open", acked: false },
+  ],
+  "site-wpg": [
+    { id: "al-8", type: "switch_offline", timestamp: NOW - 43200, last_seen: NOW - 600, count: 1, switches: [mac(0x431)], hostnames: ["wpg-sw1"], status: "open", acked: false },
+    { id: "al-9", type: "ap_bad_cable", timestamp: NOW - 20000, last_seen: NOW - 2400, count: 2, aps: [mac(0x840)], hostnames: ["wpg-ap-01"], reasons: ["Link flapping at 100 Mb/s"], status: "open", acked: false },
   ],
 };
 
@@ -322,7 +427,11 @@ export function mist(path, query, host = "api.mist.com") {
       members: (sw.vc || []).map((m, i) => ({ mac: m.mac, serial: m.serial, member_id: i + 1 })) }));
     return { body: { results: rows, total: rows.length } };
   }
-  if (path === `/orgs/${ORG_ID}/stats/devices`) return { body: SWITCHES.map(switchStats) };
+  if (path === `/orgs/${ORG_ID}/stats/devices`) {
+    return { body: query.get("type") === "gateway" ? GATEWAYS.map(gatewayStats) : SWITCHES.map(switchStats) };
+  }
+  if (path === `/orgs/${ORG_ID}/stats/bgp_peers/search`) return { body: { results: BGP_PEERS, total: BGP_PEERS.length } };
+  if (path === `/orgs/${ORG_ID}/stats/vpn_peers/search`) return { body: { results: VPN_PEERS, total: VPN_PEERS.length } };
   if (path === `/orgs/${ORG_ID}/stats/ports/search`) {
     const rows = SWITCHES.flatMap((sw) => switchStats(sw).ports.map((p) => ({ ...p, mac: sw.mac, site_id: sw.site })));
     return { body: { results: rows, total: rows.length } };
