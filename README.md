@@ -1,5 +1,9 @@
 # Mist Provision Box
 
+<p align="center">
+  <a href="https://github.com/InterconnectedSystems/mist-provision-box-public/releases/latest/download/mist-provision-box.zip"><img src=".github/download-button.svg" alt="Download mist-provision-box.zip (latest release)" width="440"></a>
+</p>
+
 **Juniper Mist and Juniper SSR tools in a browser extension: read-only reporting by default,
 and tools that make changes when you need them.** Mist Provision Box is the write-enabled
 edition of Mist Toolbox. Paste a Mist API token, pick an org (and optionally one site), pick a
@@ -11,9 +15,8 @@ it, and asks for confirmation before it runs.
 There is no Python, no server and no install beyond the extension, and the extension ships its
 own **LLM spec**, so any AI assistant can turn a script or a one-line idea into a new tool.
 
-## ⬇ [Download mist-provision-box.zip](https://github.com/InterconnectedSystems/mist-provision-box-public/releases/latest/download/mist-provision-box.zip)
-
-The latest release, ready for **Load unpacked**. Also on the
+The **Download** button above always gets the latest release's
+[`mist-provision-box.zip`](https://github.com/InterconnectedSystems/mist-provision-box-public/releases/latest/download/mist-provision-box.zip), ready for **Load unpacked**. It is also on the
 [Releases page](https://github.com/InterconnectedSystems/mist-provision-box-public/releases/latest). It
 installs alongside the read-only Mist Toolbox. Full steps: **[INSTALL.md](INSTALL.md)**.
 
