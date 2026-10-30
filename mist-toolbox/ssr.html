@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<!-- The SSR Pre/Post Check talks to a Conductor at an address only the user
+     knows, so this page, unlike toolbox.html and console.html, may reach any
+     HTTPS host (and in practice only the one the user grants through
+     chrome.permissions). It never holds a Mist token. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; frame-src 'none'; form-action 'none'; base-uri 'none'"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"/>
+<title>SSR Pre/Post Check</title>
+<link rel="stylesheet" href="toolbox.css"/>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <div class="wrap row">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">&#9673;</div>
+      <div style="min-width:0">
+        <strong>Mist Provision Box</strong>
+        <div class="subtle" style="font-size:12px">SSR Pre/Post Check · SSR Conductor, not Mist</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap stack">
+  <div class="card">
+    <h1 id="toolName" style="margin:0"></h1>
+    <p class="muted" id="toolDesc" style="margin:.2rem 0 0"></p>
+  </div>
+  <div class="alert hidden" id="err"></div>
+  <div id="toolHost"></div>
+</main>
+
+</div>
+<script type="module" src="ssr.js"></script>
+</body>
+</html>

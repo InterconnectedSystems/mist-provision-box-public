@@ -1,0 +1,9 @@
+{
+  "name": "mist-toolbox",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/",
+    "scan": "node scripts/scan-tools.mjs"
+  }
+}

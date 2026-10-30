@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<!-- Only the Mist regions in the region list may be reached from this page, by
+     any means (fetch, images, frames, forms). tests/policy.test.js keeps the host
+     list identical to MIST_HOSTS. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.mist.com https://api.gc1.mist.com https://api.ac2.mist.com https://api.gc2.mist.com https://api.gc4.mist.com https://api.eu.mist.com https://api.gc3.mist.com https://api.ac6.mist.com https://api.gc6.mist.com https://api.ac5.mist.com https://api.gc5.mist.com https://api.gc7.mist.com https://api.us.mist-federal.com; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; frame-src 'none'; form-action 'none'; base-uri 'none'"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"/>
+<title>Mist Disconnect Console</title>
+<style>
+:root {
+  --bg:#0b0d11; --surface:#13161c; --surface-2:#1a1e26; --surface-3:#232833;
+  --fg:#ecece8; --muted:#9aa0ab; --subtle:#6e7480; --border:#2a303b;
+  --accent:#8fd0c4; --accent-fg:#0b0d11; --good:#3fbf8f; --warn:#d29a3a; --crit:#e15d5d;
+  --occ-ext:#2bb3c0; --occ-site:#e8a23a; --occ-nonwifi:#e15d5d;
+}
+* { box-sizing: border-box; }
+html, body { margin:0; background:var(--bg); color:var(--fg);
+  font-family:"Segoe UI","IBM Plex Sans",system-ui,sans-serif; line-height:1.5;
+  overflow-x:clip; -webkit-text-size-adjust:100%; }
+button { cursor:pointer; font:inherit; }
+input, select { font:inherit; font-size:16px; }
+.app { min-height:100dvh; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+header { position:sticky; top:0; z-index:20; border-bottom:1px solid var(--border); background:color-mix(in oklab, var(--bg) 90%, transparent); backdrop-filter:blur(8px); }
+.wrap { max-width:72rem; margin:0 auto; padding:0.85rem 1rem; }
+main.wrap { padding-top:1.25rem; padding-bottom:4rem; }
+.row { display:flex; align-items:center; justify-content:space-between; gap:.75rem; }
+.brand { display:flex; align-items:center; gap:.75rem; min-width:0; }
+.logo { width:36px; height:36px; border:1px solid var(--border); background:var(--surface-2); border-radius:10px; display:grid; place-items:center; color:var(--accent); flex:none; }
+.muted { color:var(--muted); } .subtle { color:var(--subtle); } .crit { color:var(--crit); } .warn { color:var(--warn); } .good { color:var(--good); } .accent { color:var(--accent); }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.1rem; min-width:0; }
+.grid2 { display:grid; gap:1rem; }
+@media (min-width: 960px) { .grid2 { grid-template-columns: 1.15fr .85fr; } }
+.metrics { display:grid; gap:.75rem; grid-template-columns:1fr 1fr; }
+@media (min-width: 960px) { .metrics { grid-template-columns:repeat(4,1fr); } }
+label span { display:block; font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--subtle); margin-bottom:.4rem; }
+input, select { width:100%; min-height:44px; border-radius:10px; border:1px solid var(--border); background:var(--surface-2); color:var(--fg); padding:0 .75rem; }
+.btn { min-height:44px; border:0; border-radius:10px; padding:0 1rem; display:inline-flex; align-items:center; justify-content:center; gap:.5rem; font-weight:600; }
+.btn-p { background:var(--accent); color:var(--accent-fg); }
+.btn-s { background:var(--surface-2); color:var(--fg); border:1px solid var(--border); }
+.btn-g { background:transparent; color:var(--muted); }
+.btn:disabled { opacity:.4; }
+.stack { display:grid; gap:1rem; }
+h1 { font-size:1.35rem; margin:.2rem 0 .4rem; }
+ul.plain { margin:.6rem 0 0; padding:0; list-style:none; }
+ul.plain li { margin:0 0 .45rem; }
+.metric { min-height:96px; }
+.pulse-c { animation: pc 1.4s ease-out infinite; border-color:color-mix(in oklab, var(--crit) 70%, var(--border)); }
+.pulse-w { animation: pw 1.8s ease-out infinite; border-color:color-mix(in oklab, var(--warn) 55%, var(--border)); }
+@keyframes pc { 0%,100%{box-shadow:0 0 0 0 color-mix(in oklab,var(--crit) 45%,transparent)} 50%{box-shadow:0 0 0 8px transparent} }
+@keyframes pw { 0%,100%{box-shadow:0 0 0 0 color-mix(in oklab,var(--warn) 35%,transparent)} 50%{box-shadow:0 0 0 7px transparent} }
+@keyframes live { 0%,100%{opacity:1} 50%{opacity:.35} }
+.dot { width:6px; height:6px; border-radius:99px; background:var(--accent); animation:live 1.2s ease-out infinite; display:inline-block; }
+.pill { display:inline-flex; align-items:center; gap:.35rem; border-radius:999px; padding:.15rem .55rem; font-size:12px; background:var(--surface-2); }
+.toolbar { display:grid; gap:.5rem; }
+@media (min-width: 720px) { .toolbar { grid-template-columns: minmax(0,1fr) 7rem auto auto auto; } }
+.ev { border:1px solid var(--border); border-radius:10px; padding:.6rem .75rem; margin-bottom:.5rem; }
+.ev.neg { border-color:color-mix(in oklab,var(--crit) 35%, var(--border)); background:var(--surface-2); }
+.mono { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; }
+.break { overflow-wrap:anywhere; }
+dl { display:grid; grid-template-columns: 9.5rem minmax(0,1fr); gap:.4rem .75rem; margin: .7rem 0 0; font-size:14px; }
+dt { color:var(--subtle); } dd { margin:0; }
+pre { white-space:pre-wrap; overflow-wrap:anywhere; background:var(--surface-2); padding:.75rem; border-radius:10px; font-size:12px; }
+.alert { border:1px solid color-mix(in oklab,var(--crit) 40%, var(--border)); color:var(--crit); padding:.75rem 1rem; border-radius:12px; margin-bottom:1rem; }
+.hidden { display:none !important; }
+.legend { display:flex; flex-wrap:wrap; gap:.75rem 1.1rem; font-size:12px; color:var(--muted); margin:.4rem 0 .8rem; }
+.swatch { width:10px; height:10px; border-radius:2px; display:inline-block; margin-right:.35rem; vertical-align:middle; }
+.ap-table { width:100%; border-collapse:collapse; font-size:13px; }
+.ap-table th { text-align:left; color:var(--subtle); font-weight:500; padding:.4rem .5rem .5rem 0; font-size:11px; text-transform:uppercase; letter-spacing:.04em; position:sticky; top:0; background:var(--surface); z-index:1; box-shadow:0 1px 0 var(--border); }
+.ap-table td { padding:.45rem .5rem .45rem 0; border-top:1px solid var(--border); }
+.sess-scroll { max-height:min(32rem, 65vh); overflow:auto; -webkit-overflow-scrolling:touch; }
+.radar-scroll { max-height:min(20rem, 40vh); overflow:auto; -webkit-overflow-scrolling:touch; }
+.radio-fs { position:fixed; inset:0; z-index:80; background:var(--bg); display:flex; flex-direction:column;
+  padding: max(.75rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left)); }
+.radio-fs-inner { flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden; margin:0; }
+.radio-fs-inner .sess-scroll { max-height:none; flex:1 1 auto; min-height:0; }
+.radio-fs-head { flex:none; margin-bottom:.35rem; align-items:flex-start; }
+body.radio-fs-open { overflow:hidden; }
+#btnRadioFs { flex:none; min-height:44px; }
+.ap-table tr.radar td { background:color-mix(in oklab, var(--crit) 10%, transparent); }
+.occ-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.chiprow { display:flex; flex-wrap:wrap; gap:.35rem; align-items:center; }
+.chip { min-height:32px; padding:0 .65rem; border-radius:8px; border:1px solid var(--border); background:var(--surface-2); color:var(--muted); font-size:12px; font-weight:600; }
+.chip.on { background:color-mix(in oklab, var(--accent) 22%, var(--surface-2)); color:var(--fg); border-color:color-mix(in oklab, var(--accent) 45%, var(--border)); }
+@media (prefers-reduced-motion: reduce) { .pulse-c,.pulse-w,.dot { animation:none; } }
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="wrap row">
+  <div class="brand">
+    <div class="logo">◉</div>
+    <div style="min-width:0">
+      <div style="font-weight:650">Mist Disconnect Console</div>
+      <div class="subtle" id="sub" style="font-size:12px">direct · api.gc2.mist.com</div>
+    </div>
+  </div>
+  <button class="btn btn-g hidden" id="btnSession" type="button">← Session</button>
+</div></header>
+<main class="wrap">
+  <div id="err" class="alert hidden"></div>
+  <section id="viewConnect" class="grid2">
+    <!-- Deliberately a <div>, not a <form>: a form submit carrying a
+         type="password" field makes Chrome and Edge offer to save the token
+         to the browser password store, which would persist it outside this
+         page's control. autocomplete="new-password" suppresses autofill too. -->
+    <div class="card stack" id="formConnect">
+      <h1>Client disconnect RCA</h1>
+      <p class="muted">Investigate why a station drops: RF, 802.11 reason codes, DHCP after roam, Marvis, occupancy, 7-day radio events (DFS), and Teams/Zoom — without dumping the whole site.</p>
+      <p class="muted">This is RCA for troublesome client disconnects — not a Wi-Fi health score.</p>
+      <label><span>API region</span>
+        <select id="host"></select>
+      </label>
+      <label><span>Read-only API token</span>
+        <input id="token" type="password" autocomplete="new-password" spellcheck="false" placeholder="Observer / read-only token" minlength="8"/>
+      </label>
+      <button class="btn btn-p" type="button" id="btnConnect">Validate token</button>
+      <button class="btn btn-s" type="button" id="btnDemo">Run sample investigation</button>
+    </div>
+    <div class="stack">
+      <aside class="card" style="border-color:color-mix(in oklab,var(--accent) 35%, var(--border))">
+        <h2 class="accent" style="margin:0;font-size:13px;text-transform:uppercase;letter-spacing:.04em">Standard practice</h2>
+        <ul class="plain muted">
+          <li><strong style="color:var(--fg)">Use a read-only (Observer) token.</strong> This console only issues GET requests. Never paste Org Admin, Super User, or write-enabled keys.</li>
+          <li>Create it under <span style="color:var(--fg)">Organization → Settings → API Tokens</span> with Observer privileges scoped to the org or site you are troubleshooting.</li>
+          <li>The token stays in memory in this tab and goes straight to the Mist region you select over HTTPS — there is no server in between. It is <span style="color:var(--fg)">never written to any browser storage</span>, to cookies, or to the password manager, and it is not shared with the extension's background worker. Reloading or closing the tab discards it. Rotate the token if it was exposed.</li>
+          <li>The console clears the token and returns here after 30 minutes without interaction.</li>
+          <li>Observer still sees client identifiers (MAC, hostname, username). Treat captures as operational data.</li>
+        </ul>
+      </aside>
+      <aside class="card">
+        <h2 class="subtle" style="margin:0;font-size:13px;text-transform:uppercase">What gets correlated</h2>
+        <ul class="plain muted">
+          <li>RSSI/SNR vs deauth reason (coverage vs idle vs handshake).</li>
+          <li>DHCP/DNS failures in the 2 minutes after a roam or assoc (L3 after join).</li>
+          <li>AP ping-pong, 5→2.4 band drops, short sessions, TX retries.</li>
+          <li>Serving-AP channel occupancy: Site APs vs External APs vs Non-Wi-Fi (RRM scan).</li>
+          <li>7 days of Radio Management events (DFS radar, channel/power change) vs this client's disconnects.</li>
+          <li>Microsoft Teams / Zoom call quality overlapping those drops (when Mist has call stats).</li>
+        </ul>
+      </aside>
+    </div>
+  </section>
+  <section id="viewScope" class="hidden">
+    <form class="card stack" id="formScope" style="max-width:36rem;margin:0 auto">
+      <h1>Select site and client</h1>
+      <p class="muted">Token validated. Choose the site, then the MAC under investigation.</p>
+      <label><span>Organization</span><select id="org"></select></label>
+      <label><span>Site</span><select id="site"></select></label>
+      <label><span>Client MAC</span><input id="mac" class="mono" placeholder="aa:bb:cc:dd:ee:ff" required/></label>
+      <label><span>Lookback</span>
+        <select id="duration">
+          <option value="1h">1 hour</option><option value="6h">6 hours</option>
+          <option value="1d" selected>1 day</option><option value="1w">1 week</option>
+        </select>
+      </label>
+      <button class="btn btn-p" type="submit" id="btnDiag">Diagnose</button>
+      <p class="muted" id="fetchHint" style="margin:-.45rem 0 0;font-size:12px">If the site has a lot of devices and a lot of events, fetching can take up to 60 seconds.</p>
+    </form>
+  </section>
+  <section id="viewBoard" class="hidden stack"></section>
+</main>
+</div>
+<script type="module" src="console.js"></script>
+</body></html>

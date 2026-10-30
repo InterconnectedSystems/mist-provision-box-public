@@ -1,0 +1,749 @@
+{
+  "demo": true,
+  "host": "api.gc2.mist.com",
+  "orgId": "demo-org",
+  "siteId": "demo-site",
+  "siteName": "Sample HQ — Floor 2",
+  "mac": "0a0027c1e001",
+  "duration": "1d",
+  "online": true,
+  "stats": {
+    "mac": "0a0027c1e001",
+    "hostname": "DEMO-MBP",
+    "manufacture": "Apple",
+    "os": "macOS 15.5",
+    "model": "MacBookPro18,3",
+    "ssid": "CORP-WIFI",
+    "vlan": 40,
+    "ip": "10.40.12.88",
+    "ap": "0a0027aa1102",
+    "band": "5",
+    "channel": 149,
+    "proto": "ax",
+    "rssi": -81,
+    "snr": 11,
+    "txRate": 58,
+    "rxRate": 48,
+    "uptime": 140,
+    "lastSeen": 1699999988,
+    "txBytes": 1843200,
+    "rxBytes": 9216000,
+    "username": "demo.user",
+    "keyMgmt": "WPA2-PSK",
+    "txRetries": 214,
+    "rxRetries": 88,
+    "dualBand": true
+  },
+  "sightings": [
+    {
+      "mac": "0a0027c1e001",
+      "hostname": "DEMO-MBP",
+      "manufacture": "Apple",
+      "os": "macOS 15.5",
+      "model": "MacBookPro18,3",
+      "ssid": "CORP-WIFI",
+      "vlan": 40,
+      "ip": "10.40.12.88",
+      "ap": "0a0027aa1102",
+      "band": "5",
+      "channel": 149,
+      "proto": "ax",
+      "rssi": -81,
+      "snr": 11,
+      "txRate": 58,
+      "rxRate": 48,
+      "uptime": 140,
+      "lastSeen": 1699999988,
+      "txBytes": 1843200,
+      "rxBytes": 9216000,
+      "username": "demo.user",
+      "keyMgmt": "WPA2-PSK",
+      "txRetries": 214,
+      "rxRetries": 88,
+      "dualBand": true
+    }
+  ],
+  "events": [
+    {
+      "timestamp": 1699999960,
+      "type": "CLIENT_DNS_OK",
+      "text": "Status code 0 Successful",
+      "ap": "0a0027aa1102",
+      "ssid": "CORP-WIFI",
+      "band": "5",
+      "channel": 149,
+      "reason": null,
+      "negative": false
+    },
+    {
+      "timestamp": 1699999910,
+      "type": "CLIENT_DHCP_TIMED_OUT",
+      "text": "DORA incomplete — no ACK",
+      "ap": "0a0027aa1102",
+      "ssid": "CORP-WIFI",
+      "band": "5",
+      "channel": 149,
+      "reason": null,
+      "negative": true
+    },
+    {
+      "timestamp": 1699999860,
+      "type": "CLIENT_ASSOCIATION",
+      "text": "Associated",
+      "ap": "0a0027aa1102",
+      "ssid": "CORP-WIFI",
+      "band": "5",
+      "channel": 149,
+      "reason": null,
+      "negative": false
+    },
+    {
+      "timestamp": 1699999852,
+      "type": "CLIENT_DEAUTHENTICATION",
+      "text": "Deauthenticated by AP",
+      "ap": "0a0027aa1103",
+      "ssid": "CORP-WIFI",
+      "band": "5",
+      "channel": 36,
+      "reason": 4,
+      "negative": true
+    },
+    {
+      "timestamp": 1699999580,
+      "type": "CLIENT_DEAUTHENTICATION",
+      "text": "4-way handshake timeout",
+      "ap": "0a0027aa1103",
+      "ssid": "CORP-WIFI",
+      "band": "5",
+      "channel": 36,
+      "reason": 15,
+      "negative": true
+    },
+    {
+      "timestamp": 1699999100,
+      "type": "CLIENT_ROAMED",
+      "text": "Roamed from 0a0027aa1103",
+      "ap": "0a0027aa1102",
+      "ssid": "CORP-WIFI",
+      "band": "5",
+      "channel": 149,
+      "reason": null,
+      "negative": false
+    },
+    {
+      "timestamp": 1699998200,
+      "type": "CLIENT_AUTHORIZATION",
+      "text": "Authorized",
+      "ap": "0a0027aa1103",
+      "ssid": "CORP-WIFI",
+      "band": "5",
+      "channel": 36,
+      "reason": null,
+      "negative": false
+    },
+    {
+      "timestamp": 1699996400,
+      "type": "CLIENT_DISASSOCIATION",
+      "text": "STA leaving BSS",
+      "ap": "0a0027aa1103",
+      "ssid": "CORP-WIFI",
+      "band": "2.4",
+      "channel": 11,
+      "reason": 8,
+      "negative": true
+    }
+  ],
+  "sessions": [
+    {
+      "ap": "0a0027aa1102",
+      "apName": "DEMO-AP-F2-aa:11:02",
+      "ssid": "CORP-WIFI",
+      "band": "5",
+      "connect": 1699999860,
+      "disconnect": null,
+      "duration": 140,
+      "radarHits": [],
+      "hitByRadar": false
+    },
+    {
+      "ap": "0a0027aa1103",
+      "apName": "DEMO-AP-F2-aa:11:03",
+      "ssid": "CORP-WIFI",
+      "band": "5",
+      "connect": 1699999520,
+      "disconnect": 1699999852,
+      "duration": 332,
+      "radarHits": [
+        1699999844
+      ],
+      "hitByRadar": true
+    },
+    {
+      "ap": "0a0027aa1103",
+      "apName": "DEMO-AP-F2-aa:11:03",
+      "ssid": "CORP-WIFI",
+      "band": "5",
+      "connect": 1699999100,
+      "disconnect": 1699999160,
+      "duration": 44,
+      "radarHits": [],
+      "hitByRadar": false
+    },
+    {
+      "ap": "0a0027aa1102",
+      "apName": "DEMO-AP-F2-aa:11:02",
+      "ssid": "CORP-WIFI",
+      "band": "5",
+      "connect": 1699992800,
+      "disconnect": 1699996400,
+      "duration": 3580,
+      "radarHits": [],
+      "hitByRadar": false
+    }
+  ],
+  "marvisText": "{\n  \"results\": [\n    {\n      \"category\": \"Device Health\",\n      \"text\": \" The AP is currently online. Client DEMO-MBP was connected to DEMO-AP-F2-aa:11:02 most of the time.\",\n      \"site_id\": \"demo-site\"\n    },\n    {\n      \"category\": \"Wireless connectivity\",\n      \"text\": \"Weak RSSI and handshake timeouts on AP 0a0027aa1103. Client repeatedly deauthenticates then reassociates.\"\n    }\n  ],\n  \"start\": 1699913600,\n  \"end\": 1700000000\n}",
+  "marvisUnavailable": false,
+  "apRadio": {
+    "apMac": "0a0027aa1102",
+    "apName": "DEMO-AP-F2-aa:11:02",
+    "deviceId": "00000000-0000-0000-1000-0a0027aa1102",
+    "status": "connected",
+    "band": "5",
+    "source": "marvis",
+    "dwellSeconds": 3794,
+    "dwellShare": 0.98,
+    "marvisMentioned": true,
+    "marvisName": "DEMO-AP-F2-aa:11:02",
+    "selectionNote": "Marvis named DEMO-AP-F2-aa:11:02 as the AP this client used most of the time. Chart is that radio (0a:00:27:aa:11:02).",
+    "fallback": false,
+    "scope": "ap",
+    "unavailable": null,
+    "lastSeen": 1699999992,
+    "radio": {
+      "channel": 144,
+      "bandwidth": 20,
+      "power": 8,
+      "numClients": 0,
+      "utilAll": 12,
+      "utilTx": 1,
+      "utilRxInBss": 9,
+      "utilRxOtherBss": 0,
+      "utilNonWifi": 0,
+      "utilUnknownWifi": 0,
+      "utilUndecodable": 0
+    },
+    "channels": [
+      {
+        "channel": 100,
+        "site": 40,
+        "external": 0,
+        "nonWifi": 0,
+        "serving": false
+      },
+      {
+        "channel": 104,
+        "site": 15,
+        "external": 0,
+        "nonWifi": 0,
+        "serving": false
+      },
+      {
+        "channel": 108,
+        "site": 47,
+        "external": 0,
+        "nonWifi": 0,
+        "serving": false
+      },
+      {
+        "channel": 112,
+        "site": 19,
+        "external": 0,
+        "nonWifi": 0,
+        "serving": false
+      },
+      {
+        "channel": 116,
+        "site": 34,
+        "external": 0,
+        "nonWifi": 0,
+        "serving": false
+      },
+      {
+        "channel": 132,
+        "site": 28,
+        "external": 0,
+        "nonWifi": 0,
+        "serving": false
+      },
+      {
+        "channel": 136,
+        "site": 17,
+        "external": 0,
+        "nonWifi": 0,
+        "serving": false
+      },
+      {
+        "channel": 140,
+        "site": 24,
+        "external": 0,
+        "nonWifi": 2,
+        "serving": false
+      },
+      {
+        "channel": 144,
+        "site": 9,
+        "external": 0,
+        "nonWifi": 0,
+        "serving": true
+      },
+      {
+        "channel": 149,
+        "site": 29,
+        "external": 0,
+        "nonWifi": 0,
+        "serving": false
+      },
+      {
+        "channel": 153,
+        "site": 16,
+        "external": 0,
+        "nonWifi": 70,
+        "serving": false
+      },
+      {
+        "channel": 157,
+        "site": 20,
+        "external": 0,
+        "nonWifi": 0,
+        "serving": false
+      },
+      {
+        "channel": 161,
+        "site": 0,
+        "external": 5,
+        "nonWifi": 75,
+        "serving": false
+      },
+      {
+        "channel": 165,
+        "site": 0,
+        "external": 0,
+        "nonWifi": 100,
+        "serving": false
+      }
+    ]
+  },
+  "radioEvents": [
+    {
+      "timestamp": 1699999844,
+      "ap": "0a0027aa1103",
+      "apName": "DEMO-AP-F2-aa:11:03",
+      "band": "5",
+      "channel": 149,
+      "preChannel": 36,
+      "bandwidth": 80,
+      "preBandwidth": 80,
+      "power": 17,
+      "prePower": 17,
+      "event": "rrm-radar",
+      "label": "Post radar",
+      "usage": "5",
+      "preUsage": "5",
+      "channelChanged": true,
+      "onClientAp": true,
+      "highlight": true
+    },
+    {
+      "timestamp": 1699999920,
+      "ap": "0a0027aa1102",
+      "apName": "DEMO-AP-F2-aa:11:02",
+      "band": "5",
+      "channel": 144,
+      "preChannel": 144,
+      "bandwidth": 20,
+      "preBandwidth": 20,
+      "power": 8,
+      "prePower": 14,
+      "event": "triggered-site_rrm",
+      "label": "Triggered site RRM",
+      "usage": "5",
+      "preUsage": "5",
+      "channelChanged": false,
+      "onClientAp": true,
+      "highlight": false
+    },
+    {
+      "timestamp": 1699910000,
+      "ap": "0a0027aa1102",
+      "apName": "DEMO-AP-F2-aa:11:02",
+      "band": "5",
+      "channel": 144,
+      "preChannel": 153,
+      "bandwidth": 20,
+      "preBandwidth": 80,
+      "power": 8,
+      "prePower": 14,
+      "event": "interference-ap-non-wifi",
+      "label": "Interference AP non wifi",
+      "usage": "5",
+      "preUsage": "5",
+      "channelChanged": true,
+      "onClientAp": false,
+      "highlight": false
+    },
+    {
+      "timestamp": 1699823600,
+      "ap": "0a0027aa1102",
+      "apName": "DEMO-AP-F2-aa:11:02",
+      "band": "5",
+      "channel": 144,
+      "preChannel": 144,
+      "bandwidth": 20,
+      "preBandwidth": 20,
+      "power": 8,
+      "prePower": 8,
+      "event": "scheduled-site_rrm",
+      "label": "Scheduled site RRM",
+      "usage": "5",
+      "preUsage": "5",
+      "channelChanged": false,
+      "onClientAp": false,
+      "highlight": false
+    },
+    {
+      "timestamp": 1699654400,
+      "ap": "0a0027aa1105",
+      "apName": "DEMO-AP-F2-aa:11:05",
+      "band": "5",
+      "channel": 108,
+      "preChannel": 108,
+      "bandwidth": 40,
+      "preBandwidth": 40,
+      "power": 8,
+      "prePower": 8,
+      "event": "neighbor-ap-down",
+      "label": "Neighbor AP down",
+      "usage": "5",
+      "preUsage": "5",
+      "channelChanged": false,
+      "onClientAp": false,
+      "highlight": false
+    }
+  ],
+  "radioEventsUnavailable": null,
+  "clientRadarEvents": [
+    {
+      "timestamp": 1699999844,
+      "ap": "0a0027aa1103",
+      "apName": "DEMO-AP-F2-aa:11:03",
+      "band": "5",
+      "channel": 149,
+      "preChannel": 36,
+      "bandwidth": 80,
+      "preBandwidth": 80,
+      "power": 17,
+      "prePower": 17,
+      "event": "rrm-radar",
+      "label": "Post radar",
+      "usage": "5",
+      "preUsage": "5",
+      "channelChanged": true,
+      "onClientAp": true,
+      "highlight": true
+    }
+  ],
+  "calls": [
+    {
+      "app": "teams",
+      "appLabel": "Microsoft Teams",
+      "mac": "0a0027c1e001",
+      "meetingId": "demo-teams-1",
+      "start": 1699999790,
+      "end": 1699999965,
+      "duration": 175,
+      "audioQuality": 2,
+      "videoQuality": 3,
+      "screenShareQuality": null,
+      "rating": 2,
+      "poor": true,
+      "teams": true
+    },
+    {
+      "app": "teams",
+      "appLabel": "Microsoft Teams",
+      "mac": "0a0027c1e001",
+      "meetingId": "demo-teams-2",
+      "start": 1699910000,
+      "end": 1699911800,
+      "duration": 1800,
+      "audioQuality": 5,
+      "videoQuality": 5,
+      "screenShareQuality": null,
+      "rating": 5,
+      "poor": false,
+      "teams": true
+    },
+    {
+      "app": "zoom",
+      "appLabel": "Zoom",
+      "mac": "0a0027c1e001",
+      "meetingId": "demo-zoom-1",
+      "start": 1699989200,
+      "end": 1699991600,
+      "duration": 2400,
+      "audioQuality": 4,
+      "videoQuality": 4,
+      "screenShareQuality": null,
+      "rating": null,
+      "poor": false,
+      "teams": false
+    }
+  ],
+  "callsUnavailable": null,
+  "radarAlerts": [
+    {
+      "id": "session-radar-1699999844.0-0a0027aa1103",
+      "severity": "crit",
+      "title": "Session was on this AP during Post radar",
+      "summary": "This client's session on DEMO-AP-F2-aa:11:03 (0a:00:27:aa:11:03) was active when Post radar hit that same AP (channel 36 → 149). Microsoft Teams meeting demo-teams-1 was in progress. DFS vacates 5 GHz and deauthenticates every associated station.",
+      "sessionAp": "0a0027aa1103",
+      "sessionApName": "DEMO-AP-F2-aa:11:03",
+      "sessionConnect": 1699999520,
+      "sessionDisconnect": 1699999852,
+      "sessionDuration": 332,
+      "radarEvent": "Post radar",
+      "radarTime": 1699999844,
+      "radarAp": "0a0027aa1103",
+      "radarApName": "DEMO-AP-F2-aa:11:03",
+      "radarChannel": "36 → 149",
+      "radarWidth": "80 MHz",
+      "radarPower": "17 dBm",
+      "radarBand": "5 GHz → 5 GHz",
+      "call": "Microsoft Teams",
+      "meetingId": "demo-teams-1",
+      "callStart": 1699999790,
+      "callEnd": 1699999965,
+      "detail": {
+        "call": "Microsoft Teams",
+        "meetingId": "demo-teams-1",
+        "callStart": 1699999790,
+        "callEnd": 1699999965,
+        "callDuration": 175,
+        "audioQuality": 2,
+        "videoQuality": 3,
+        "clientAp": "0a0027aa1103",
+        "clientApName": "DEMO-AP-F2-aa:11:03",
+        "radarEvent": "Post radar",
+        "radarType": "rrm-radar",
+        "radarTime": 1699999844,
+        "radarAp": "0a0027aa1103",
+        "radarApName": "DEMO-AP-F2-aa:11:03",
+        "radarChannel": "36 → 149",
+        "radarWidth": "80 MHz",
+        "radarPower": "17 dBm",
+        "radarBand": "5 GHz → 5 GHz",
+        "dropType": null,
+        "dropTime": null
+      },
+      "session": {
+        "ap": "0a0027aa1103",
+        "apName": "DEMO-AP-F2-aa:11:03",
+        "ssid": "CORP-WIFI",
+        "band": "5",
+        "connect": 1699999520,
+        "disconnect": 1699999852,
+        "duration": 332,
+        "hitByRadar": true
+      },
+      "radio": {
+        "timestamp": 1699999844,
+        "ap": "0a0027aa1103",
+        "apName": "DEMO-AP-F2-aa:11:03",
+        "band": "5",
+        "channel": 149,
+        "preChannel": 36,
+        "bandwidth": 80,
+        "preBandwidth": 80,
+        "power": 17,
+        "prePower": 17,
+        "event": "rrm-radar",
+        "label": "Post radar",
+        "usage": "5",
+        "preUsage": "5",
+        "channelChanged": true,
+        "highlight": true,
+        "onClientAp": true
+      },
+      "radios": [
+        {
+          "timestamp": 1699999844,
+          "ap": "0a0027aa1103",
+          "apName": "DEMO-AP-F2-aa:11:03",
+          "band": "5",
+          "channel": 149,
+          "preChannel": 36,
+          "bandwidth": 80,
+          "preBandwidth": 80,
+          "power": 17,
+          "prePower": 17,
+          "event": "rrm-radar",
+          "label": "Post radar",
+          "usage": "5",
+          "preUsage": "5",
+          "channelChanged": true,
+          "highlight": true,
+          "onClientAp": true
+        }
+      ]
+    }
+  ],
+  "radioStoreStats": {
+    "scanned": 5,
+    "dropped": 0,
+    "radars": 1,
+    "kept": 5,
+    "clientHits": 1
+  },
+  "verdict": {
+    "primaryCause": "Post radar on the AP this client was connected to",
+    "notes": [
+      "RSSI -81 dBm is critically weak — coverage or obstruction.",
+      "SNR 11 dB is critically low — noise or interference likely.",
+      "3 deauth/disassoc event(s): 15 — 4-way handshake timeout; 4 — Disassociated due to inactivity; 8 — STA leaving BSS.",
+      "1 DHCP failure(s) after association — L3 / gateway.",
+      "214 TX retries — airtime contention or a dirty channel.",
+      "1 Post radar / DFS event(s) on APs this client was associated to in this window.",
+      "Microsoft Teams in progress during Post radar.",
+      "Post radar on the AP this client was connected to",
+      "Coverage hole (weak RSSI and SNR together)",
+      "DHCP failed after join / roam — L3, not RF",
+      "Sticky client then inactivity deauth",
+      "High TX retries at the cell edge"
+    ],
+    "correlations": [
+      {
+        "id": "radio-radar-1699999844.0-0a0027aa1103",
+        "title": "Post radar on the AP this client was connected to",
+        "evidence": "Post radar at radar AP DEMO-AP-F2-aa:11:03 (0a:00:27:aa:11:03), channel 36 → 149. Client was on DEMO-AP-F2-aa:11:03 (0a:00:27:aa:11:03) — same AP. CLIENT_DEAUTHENTICATION 8s later. DFS vacates 5 GHz immediately.",
+        "confidence": "high",
+        "severity": "crit",
+        "highlight": true,
+        "detail": {
+          "call": null,
+          "meetingId": null,
+          "callStart": null,
+          "callEnd": null,
+          "callDuration": null,
+          "audioQuality": null,
+          "videoQuality": null,
+          "clientAp": "0a0027aa1103",
+          "clientApName": "DEMO-AP-F2-aa:11:03",
+          "radarEvent": "Post radar",
+          "radarType": "rrm-radar",
+          "radarTime": 1699999844,
+          "radarAp": "0a0027aa1103",
+          "radarApName": "DEMO-AP-F2-aa:11:03",
+          "radarChannel": "36 → 149",
+          "radarWidth": "80 MHz",
+          "radarPower": "17 dBm",
+          "radarBand": "5 GHz → 5 GHz",
+          "dropType": "CLIENT_DEAUTHENTICATION",
+          "dropTime": 1699999852
+        }
+      },
+      {
+        "id": "call-radar-1699999790.0-1699999844.0-0a0027aa1103",
+        "title": "Microsoft Teams in progress during Post radar",
+        "evidence": "Microsoft Teams meeting demo-teams-1 175s (audio 2 / video 3). Client AP at radar time: DEMO-AP-F2-aa:11:03 (0a:00:27:aa:11:03). Post radar on DEMO-AP-F2-aa:11:03 (0a:00:27:aa:11:03), channel 36 → 149, 80 MHz, 17 dBm.",
+        "confidence": "high",
+        "severity": "crit",
+        "highlight": true,
+        "detail": {
+          "call": "Microsoft Teams",
+          "meetingId": "demo-teams-1",
+          "callStart": 1699999790,
+          "callEnd": 1699999965,
+          "callDuration": 175,
+          "audioQuality": 2,
+          "videoQuality": 3,
+          "clientAp": "0a0027aa1103",
+          "clientApName": "DEMO-AP-F2-aa:11:03",
+          "radarEvent": "Post radar",
+          "radarType": "rrm-radar",
+          "radarTime": 1699999844,
+          "radarAp": "0a0027aa1103",
+          "radarApName": "DEMO-AP-F2-aa:11:03",
+          "radarChannel": "36 → 149",
+          "radarWidth": "80 MHz",
+          "radarPower": "17 dBm",
+          "radarBand": "5 GHz → 5 GHz",
+          "dropType": "CLIENT_DEAUTHENTICATION",
+          "dropTime": 1699999852
+        }
+      },
+      {
+        "id": "rf-coverage",
+        "title": "Coverage hole (weak RSSI and SNR together)",
+        "evidence": "Live RSSI -81 dBm and SNR 11 dB. Mist treats RSSI < −75 dBm as a bad-roam / coverage signature; SNR < 15 dB confirms the client is at the edge or obstructed.",
+        "confidence": "high",
+        "severity": "crit"
+      },
+      {
+        "id": "dhcp-after-join-1699999910.0",
+        "title": "DHCP failed after join / roam — L3, not RF",
+        "evidence": "CLIENT_ASSOCIATION at the prior AP, then CLIENT_DHCP_TIMED_OUT 50s later. Association succeeded; DORA did not. Check VLAN, helper, and gateway on AP 0a0027aa1102.",
+        "confidence": "high",
+        "severity": "crit"
+      },
+      {
+        "id": "handshake-1699999580.0",
+        "title": "4-way handshake timeout (PSK / 802.1X)",
+        "evidence": "15 — 4-way handshake timeout on AP 0a0027aa1103. Classic mismatch of PSK, expired 802.1X, or a client that associated then failed key exchange.",
+        "confidence": "high",
+        "severity": "crit"
+      },
+      {
+        "id": "sticky-idle",
+        "title": "Sticky client then inactivity deauth",
+        "evidence": "1 inactivity (reason 4) deauth(s) while RF is -81 dBm. Client held a far AP until the AP aged it out — typical sticky-client / coverage-hole sequence in Mist roaming docs.",
+        "confidence": "high",
+        "severity": "crit"
+      },
+      {
+        "id": "retries-edge",
+        "title": "High TX retries at the cell edge",
+        "evidence": "214 TX retries with RSSI -81 dBm. Client is both weak and retrying — add coverage or reduce sticky behavior toward a nearer AP.",
+        "confidence": "high",
+        "severity": "crit"
+      },
+      {
+        "id": "ap-adj-nonwifi",
+        "title": "Adjacent-channel non-Wi-Fi energy",
+        "evidence": "Channel 153 shows 70% non-Wi-Fi next to serving channel 144. Bleed and AGC pumping on the client can look like a dirty serving channel.",
+        "confidence": "medium",
+        "severity": "warn"
+      },
+      {
+        "id": "radio-power-1699999920.0-0a0027aa1102",
+        "title": "RRM power change on the AP this client was on",
+        "evidence": "Triggered site RRM on AP 0a:00:27:aa:11:02. Power 14 → 8 dBm. A sudden drop in TX power shrinks the cell and looks like a coverage hole to a mid-cell client.",
+        "confidence": "medium",
+        "severity": "warn"
+      }
+    ]
+  },
+  "fetchedAt": 1700000000000,
+  "email": "demo@local",
+  "orgs": [
+    {
+      "id": "demo-org",
+      "name": "Interconnected Systems (sample)"
+    }
+  ],
+  "sites": [
+    {
+      "id": "demo-site",
+      "name": "Sample HQ — Floor 2"
+    }
+  ]
+}

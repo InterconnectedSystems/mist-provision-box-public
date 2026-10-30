@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<!-- Only the Mist regions in the region list may be reached from this page, by
+     any means (fetch, images, frames, forms). tests/policy.test.js keeps the host
+     list identical to MIST_HOSTS. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.mist.com https://api.gc1.mist.com https://api.ac2.mist.com https://api.gc2.mist.com https://api.gc4.mist.com https://api.eu.mist.com https://api.gc3.mist.com https://api.ac6.mist.com https://api.gc6.mist.com https://api.ac5.mist.com https://api.gc5.mist.com https://api.gc7.mist.com https://api.us.mist-federal.com; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; frame-src 'none'; form-action 'none'; base-uri 'none'"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"/>
+<title>Mist Provision Box</title>
+<link rel="stylesheet" href="toolbox.css"/>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <div class="wrap row">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">&#9673;</div>
+      <div style="min-width:0">
+        <strong>Mist Provision Box</strong>
+        <div class="subtle" id="sub" style="font-size:12px">not connected</div>
+      </div>
+    </div>
+    <div class="row" style="gap:.5rem">
+      <button id="btnHome" class="btn btn-g hidden" type="button">&#8592; All tools</button>
+      <button id="btnWipe" class="btn btn-g hidden" type="button">End session</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap stack">
+  <div id="err" class="alert hidden" role="alert"></div>
+
+  <!-- Credential bar. Deliberately not a <form>: a form here invites the
+       password manager to offer to save the API token. -->
+  <section class="card" id="sessionCard">
+    <div class="sessbar" id="formSession">
+      <label>
+        <span>Mist region</span>
+        <select id="host"></select>
+      </label>
+      <label>
+        <span>API token (read-only Observer recommended)</span>
+        <input id="token" type="password" autocomplete="new-password" spellcheck="false"
+               minlength="8" placeholder="paste token, then Validate"/>
+      </label>
+      <button id="btnConnect" class="btn btn-p" type="button">Validate token</button>
+    </div>
+    <p class="subtle" style="font-size:12px;margin:.7rem 0 0">
+      The token is held in memory for this tab only — never stored, never given to a tool, and
+      wiped after 30 minutes idle. This page's security policy only lets it reach the Mist regions
+      in the list above. SSR Pre/Post does not use the Mist API: it opens in its own tab and asks
+      for its own credentials.
+    </p>
+    <div id="orgRow" class="sessbar hidden" style="margin-top:.85rem">
+      <label>
+        <span>Organization</span>
+        <select id="org"></select>
+      </label>
+      <div class="access-wrap">
+        <span id="accessBadge" class="access-badge hidden"></span>
+        <div class="muted" style="font-size:13px" id="orgHint"></div>
+        <div class="warn" style="font-size:12px" id="accessHint"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Home: the tool menu -->
+  <section id="viewHome">
+    <h1>Tools</h1>
+    <div class="tools" id="toolGrid"></div>
+    <div class="row" style="margin-top:1.25rem;flex-wrap:wrap">
+      <p class="subtle" style="font-size:12px;margin:0" id="regNote"></p>
+      <button id="btnAddTool" class="btn btn-s" type="button">Manage tools</button>
+    </div>
+
+    <!-- Add / remove tools. Writes into the unpacked extension folder the user
+         picks; see lib/installer.js. -->
+    <section class="card stack hidden" id="addPanel" style="margin-top:1rem">
+      <div class="row" style="flex-wrap:wrap">
+        <strong>Manage tools</strong>
+        <div class="actions">
+          <a class="btn btn-g" href="docs/view.html?doc=TOOL_GUIDE.md" target="_blank" rel="noopener">Authoring guide</a>
+          <button id="btnDownloadGuide" class="btn btn-g" type="button">Download guide</button>
+          <button id="btnCopyPrompt" class="btn btn-g" type="button">Copy AI prompt</button>
+          <button id="btnCloseAdd" class="btn btn-g" type="button">Close</button>
+        </div>
+      </div>
+      <p class="muted" style="font-size:13px;margin:0">
+        Choose a tool's <span class="mono">.js</span> file. It is checked first, then written into this
+        extension's <span class="mono">tools/</span> folder and listed in
+        <span class="mono">tools/tools.json</span>. The first install in a tab asks you to pick the
+        extension's folder (the one you chose with <em>Load unpacked</em>).
+        Have a Python or Node script instead? Use <em>Copy AI prompt</em> to convert it.
+        Tools that make changes to Mist are allowed, but they get a strong warning here, a
+        <em>Makes changes</em> label and a confirmation before they run. Read-only tools are best practice.
+      </p>
+      <label class="drop" id="dropZone">
+        <input id="toolFile" type="file" accept=".js,text/javascript"/>
+        <span id="dropLabel">Drop a .js file here, or click to choose</span>
+      </label>
+      <div id="checkOut"></div>
+      <div class="actions">
+        <button id="btnInstall" class="btn btn-p hidden" type="button">Install</button>
+        <span class="muted" id="addStatus" style="font-size:13px"></span>
+      </div>
+      <div id="installedList"></div>
+    </section>
+  </section>
+
+  <!-- A single tool -->
+  <section id="viewTool" class="stack hidden">
+    <div>
+      <button class="crumb" id="crumbHome" type="button">Tools</button>
+      <span class="subtle"> / </span><span id="toolCrumb"></span>
+    </div>
+    <div class="card">
+      <h1 id="toolName"></h1>
+      <p class="muted" id="toolDesc" style="margin:.2rem 0 1rem"></p>
+      <div id="toolNotice"></div>
+      <div class="params" id="toolParams"></div>
+      <div class="actions" style="margin-top:1.1rem">
+        <button id="btnRun" class="btn btn-p" type="button">Run</button>
+        <button id="btnCancel" class="btn btn-s hidden" type="button">Cancel</button>
+        <span class="muted" id="runStatus" style="font-size:13px"></span>
+      </div>
+      <div class="bar hidden" id="progWrap" style="margin-top:.9rem"><i id="prog"></i></div>
+    </div>
+    <div class="card hidden" id="logCard">
+      <div class="row"><strong style="font-size:13px">Activity</strong></div>
+      <div class="log mono" id="log"></div>
+    </div>
+    <div class="card hidden" id="resultCard">
+      <div class="row" style="flex-wrap:wrap;gap:.6rem">
+        <strong id="resultTitle" style="font-size:13px"></strong>
+        <div class="actions" id="resultActions"></div>
+      </div>
+      <div id="resultBody"></div>
+    </div>
+    <div id="toolHost"></div>
+  </section>
+</main>
+
+</div>
+<script type="module" src="toolbox.js"></script>
+</body>
+</html>

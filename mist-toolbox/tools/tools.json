@@ -1,0 +1,18 @@
+[
+  "ap-site-upgrade.js",
+  "bgp-sessions.js",
+  "client-wifi-phy.js",
+  "disconnect-console.js",
+  "ip-blocks.js",
+  "port-inventory.js",
+  "site-alarms.js",
+  "ssid-client-lists.js",
+  "ssid-report.js",
+  "ssr-pre-post.js",
+  "switch-additional-cli.js",
+  "switch-configs.js",
+  "switch-psu-status.js",
+  "switch-report.js",
+  "switch-site-upgrade.js",
+  "wifi-clients.js"
+]

@@ -1,0 +1,18 @@
+# Python / Node build artefacts
+__pycache__/
+*.pyc
+node_modules/
+
+# Kept local: names internal data centers
+parse_bgp_homing.py
+
+# Report output and SSR snapshot downloads, which can hold org data
+*.xlsx
+*.csv
+ssr_precheck_*.json
+
+.DS_Store
+
+# Upload tokens never enter git
+mac-agent/site.token
+mist-toolbox/engine/mac-agent-token.js
