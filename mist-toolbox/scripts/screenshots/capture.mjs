@@ -12,12 +12,13 @@
 
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { cp, mkdir, mkdtemp, readFile, rm, stat, unlink, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, readdir, rm, stat, unlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { CONDUCTOR, ORG_ID, PHY_MAC, conductor, mist, setSelfRole } from "./fixtures.mjs";
+import { readXlsx, sheetPage } from "./sheetview.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const outDir = join(root, "docs", "screenshots");
@@ -91,7 +92,8 @@ await cmd("Page.enable");
 await cmd("Runtime.enable");
 await cmd("Emulation.setDeviceMetricsOverride", { width: WIDTH, height: 900, deviceScaleFactor: 1, mobile: false });
 await cmd("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: "light" }] });
-await send("Browser.setDownloadBehavior", { behavior: "allow", downloadPath: join(work, "downloads") });
+const downloads = join(work, "downloads");
+await send("Browser.setDownloadBehavior", { behavior: "allow", downloadPath: downloads });
 
 // ---- Fixture network ----------------------------------------------------------
 
@@ -204,6 +206,9 @@ async function go(url) {
 const click = (sel) => evaluate(`document.querySelector(${JSON.stringify(sel)}).click()`);
 const setValue = (sel, v) => evaluate(`(() => { const el = document.querySelector(${JSON.stringify(sel)});
   el.value = ${JSON.stringify(v)}; el.dispatchEvent(new Event("input", {bubbles:true})); el.dispatchEvent(new Event("change", {bubbles:true})); })()`);
+// For inputs without an id, such as a tool's own filter box.
+const typeInto = (sel, v) => evaluate(`(() => { const el = document.querySelector(${JSON.stringify(sel)});
+  el.value = ${JSON.stringify(v)}; el.dispatchEvent(new Event("input", {bubbles:true})); })()`);
 const setChecked = (sel, v) => evaluate(`(() => { const el = document.querySelector(${JSON.stringify(sel)});
   el.checked = ${v}; el.dispatchEvent(new Event("change", {bubbles:true})); })()`);
 
@@ -253,6 +258,42 @@ async function runTool(id, { params = {}, single } = {}) {
   await evaluate("window.scrollTo(0, 0)");
 }
 
+// ---- Workbooks --------------------------------------------------------------------
+//
+// Every tool that builds a workbook saves it straight to the downloads folder.
+// grabXlsx waits for the one a run just wrote; the workbook shots at the end
+// render each through sheetview.mjs.
+
+const workbooks = {};
+const seenFiles = new Set();
+async function grabXlsx(id) {
+  const end = Date.now() + 15000;
+  while (Date.now() < end) {
+    const fresh = (await readdir(downloads).catch(() => []))
+      .filter((f) => f.endsWith(".xlsx") && !seenFiles.has(f));
+    if (fresh.length) {
+      await sleep(300);
+      fresh.forEach((f) => seenFiles.add(f));
+      workbooks[id] = { name: fresh[0], buf: await readFile(join(downloads, fresh[0])) };
+      return;
+    }
+    await sleep(200);
+  }
+  throw new Error(`No .xlsx downloaded for ${id}`);
+}
+
+async function sheetShot(name, caption, id, sheetName, opts) {
+  const wb = workbooks[id];
+  const book = readXlsx(wb.buf);
+  const idx = book.sheets.findIndex((sh) => sh.name === sheetName);
+  if (idx < 0) throw new Error(`${wb.name} has no sheet "${sheetName}" (${book.sheets.map((sh) => sh.name).join(", ")})`);
+  await go("about:blank");
+  const { frameTree } = await cmd("Page.getFrameTree");
+  await cmd("Page.setDocumentContent", { frameId: frameTree.frame.id, html: sheetPage(book, wb.name, idx, opts) });
+  await sleep(300);
+  await shot(name, caption);
+}
+
 // ---- The tour -----------------------------------------------------------------
 
 await rm(outDir, { recursive: true, force: true });
@@ -279,34 +320,55 @@ try {
   await shot("02-home", "Tool menu with each tool's level (Site · Org, Site · Client, SSR Conductor)");
 
   await runTool("ssid-report");
+  await grabXlsx("ssid-report");
   await shot("03-ssid-report", "SSID Report — every site in the org");
 
   await runTool("switch-report", { single: "site-hq" });
+  await grabXlsx("switch-report");
   await shot("04-switch-report-single-site", "Switch Software Report for one site (All sites unticked, Site picked)");
 
   await runTool("switch-configs");
   await shot("05-switch-config-export", "Switch Config Export — one .zip with a folder per site");
 
   await runTool("site-alarms", { params: { duration: "7d" } });
+  await grabXlsx("site-alarms");
   await shot("06-site-alarms", "Site Alarms — past 7 days, all sites");
 
   await runTool("wifi-clients");
+  await grabXlsx("wifi-clients");
   await shot("07-wifi-clients", "Wi-Fi Clients Export");
 
   await runTool("client-wifi-phy", { params: { mac: PHY_MAC } });
+  await grabXlsx("client-wifi-phy");
   await shot("07b-client-wifi-phy", "Client Wi-Fi PHY Inspector — one client's radio link graded, site found automatically");
 
   await runTool("ip-blocks");
+  await grabXlsx("ip-blocks");
   await shot("08-ip-blocks", "IP Blocks / IRB Report — duplicate subnet flagged across sites");
 
   await runTool("port-inventory");
+  await grabXlsx("port-inventory");
   await shot("09-port-inventory", "Switch Port Inventory");
 
   await runTool("switch-psu-status");
-  await shot("09b-switch-psu-status", "Switch PSU Status — a failed supply and a switch without redundancy flagged");
+  await grabXlsx("switch-psu-status");
+  await shot("09b-switch-psu-status", "Switch PSU Status — failed supplies and switches without redundancy, by site");
+  // The dashboard's own filters: every switch, a typed site name, a clicked site bar.
+  await click('.psu-ctl [data-mode="all"]');
+  await shot("09b2-psu-all-switches", "Switch PSU Status — All switches, disconnected ones dashed with their last known PSU state", [".psu-v"]);
+  await typeInto(".psu-ctl input", "vancouver");
+  await shot("09b3-psu-search-site", "Switch PSU Status — type a site name: its failed, healthy and disconnected switches", [".psu-v"]);
+  await typeInto(".psu-ctl input", "");
+  await click('.psu-srow[data-site="Branch - Calgary"]');
+  await shot("09b4-psu-focus-site", "Switch PSU Status — click a site's bar to focus it", [".psu-v"]);
 
   await runTool("switch-additional-cli");
+  await grabXlsx("switch-additional-cli");
   await shot("09c-switch-additional-cli", "Switch Additional CLI — template, rule, site and device commands side by side");
+
+  await runTool("bgp-sessions");
+  await grabXlsx("bgp-sessions");
+  await shot("09h-bgp-sessions", "BGP Sessions — switch EVPN, WAN-edge BGP and SSR/SRX peer paths, problems first");
 
   // SSID Banned / Approved Clients draws its own screen, and only a token that can
   // make changes reaches Push, so sign in again with a write role for it.
@@ -364,6 +426,21 @@ try {
   await go(extUrl("console.html#demo"));
   await waitFor("document.body.innerText.includes('sample')", "console demo", 20000);
   await shot("13-disconnect-console", "Disconnect Console — built-in sample investigation");
+
+  // The workbooks the runs above saved, one or two sheets each.
+  await sheetShot("30-xlsx-psu-switches", "Switch PSU Status workbook — Switches sheet", "switch-psu-status", "Switches");
+  await sheetShot("31-xlsx-psu-psus", "Switch PSU Status workbook — one row per power supply", "switch-psu-status", "PSUs");
+  await sheetShot("32-xlsx-bgp-problems", "BGP Sessions workbook — Problems sheet", "bgp-sessions", "Problems");
+  await sheetShot("33-xlsx-bgp-paths", "BGP Sessions workbook — Peer paths sheet", "bgp-sessions", "Peer paths");
+  await sheetShot("34-xlsx-alarms", "Site Alarms workbook — Alarms sheet", "site-alarms", "Alarms");
+  await sheetShot("35-xlsx-alarms-by-type", "Site Alarms workbook — By Type sheet", "site-alarms", "By Type");
+  await sheetShot("36-xlsx-port-inventory", "Switch Port Inventory workbook — Switch Ports table", "port-inventory", "Switch Ports");
+  await sheetShot("37-xlsx-ip-blocks", "IP Blocks / IRB Report workbook — IRB Interfaces sheet", "ip-blocks", "IRB Interfaces");
+  await sheetShot("38-xlsx-additional-cli", "Switch Additional CLI workbook — CLI Lines sheet", "switch-additional-cli", "CLI Lines");
+  await sheetShot("39-xlsx-wifi-phy", "Client Wi-Fi PHY Inspector workbook — Findings sheet", "client-wifi-phy", "Findings");
+  await sheetShot("40-xlsx-wifi-clients", "Wi-Fi Clients Export workbook — WiFi_Clients sheet", "wifi-clients", "WiFi_Clients");
+  await sheetShot("41-xlsx-ssid", "SSID Report workbook — SSIDs by Site sheet", "ssid-report", "SSIDs by Site");
+  await sheetShot("42-xlsx-switch-report", "Switch Software Report workbook — Switches sheet", "switch-report", "Switches");
 
   // ---- Adding a tool with an AI assistant ----------------------------------------
   await go(extUrl("docs/view.html?doc=TOOL_PROMPT.md"));
