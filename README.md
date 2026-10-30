@@ -11,7 +11,9 @@ it, and asks for confirmation before it runs.
 There is no Python, no server and no install beyond the extension, and the extension ships its
 own **LLM spec**, so any AI assistant can turn a script or a one-line idea into a new tool.
 
-Get the release ZIP, `mist-provision-box.zip`, from the
+## ⬇ [Download mist-provision-box.zip](https://github.com/InterconnectedSystems/mist-provision-box-public/releases/latest/download/mist-provision-box.zip)
+
+The latest release, ready for **Load unpacked**. Also on the
 [Releases page](https://github.com/InterconnectedSystems/mist-provision-box-public/releases/latest). It
 installs alongside the read-only Mist Toolbox. Full steps: **[INSTALL.md](INSTALL.md)**.
 
@@ -139,7 +141,7 @@ The full walkthrough with screenshots is in **[ADDING_TOOLS.md](ADDING_TOOLS.md)
 
 Chrome or Edge, on Windows, macOS or Linux:
 
-1. Download **`mist-provision-box.zip`** from the
+1. Download **[`mist-provision-box.zip`](https://github.com/InterconnectedSystems/mist-provision-box-public/releases/latest/download/mist-provision-box.zip)** from the
    [Releases page](https://github.com/InterconnectedSystems/mist-provision-box-public/releases/latest)
    or run
    `gh release download -R InterconnectedSystems/mist-provision-box-public -p mist-provision-box.zip`.
