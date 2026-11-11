@@ -12,7 +12,8 @@ Describe the workflow you want (or paste a script you already have) to any AI as
 the built-in prompt, install the file it gives you, and it appears in the menu.
 [How to create a tool](#create-your-own-tools).
 
-No Python, no server, nothing to install beyond the extension.
+**No Python or backend dependencies.** Everything runs in your browser and talks straight to the
+Mist API: there is no server to host and nothing to install beyond the extension.
 
 <p align="center">
   <a href="https://github.com/InterconnectedSystems/mist-provision-box-public/releases/latest/download/mist-provision-box.zip"><img src=".github/download-button.svg" alt="Download mist-provision-box.zip (latest release)" width="440"></a>
