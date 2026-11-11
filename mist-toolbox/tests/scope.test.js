@@ -62,6 +62,7 @@ test("every built-in tool card says what level it works at", async () => {
     "disconnect-console": "Site · Client",
     "ip-blocks": "Site · Org",
     "port-inventory": "Site · Org",
+    "port-stats-correlator": "Site · Org",
     "ssid-client-lists": "Site · Org",
     "ssid-report": "Site · Org",
     "site-alarms": "Site · Org",            // its own checkbox + dropdown count

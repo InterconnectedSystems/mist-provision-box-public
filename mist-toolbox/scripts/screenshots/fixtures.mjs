@@ -6,12 +6,15 @@
 
 export const ORG_ID = "demo-org";
 export const CONDUCTOR = "https://conductor.example.net";
+// Vancouver's id is UUID-shaped: the toolbox only opens a switch CLI session
+// (Port Stats Correlator) for real Mist site and device ids.
+export const VAN_SITE = "0d6a1b2c-0000-4000-8000-00000000040a";
 
 const SITES = [
   { id: "site-hq", name: "HQ - Toronto", networktemplate_id: "swtpl-campus", address: "100 Example Ave, Toronto ON", country_code: "CA", timezone: "America/Toronto" },
   { id: "site-ott", name: "Branch - Ottawa", networktemplate_id: "swtpl-campus", address: "20 Sample St, Ottawa ON", country_code: "CA", timezone: "America/Toronto" },
   { id: "site-mtl", name: "Warehouse - Montreal", networktemplate_id: "swtpl-branch", address: "5 Demo Rd, Montreal QC", country_code: "CA", timezone: "America/Toronto" },
-  { id: "site-van", name: "DC - Vancouver", networktemplate_id: "swtpl-campus", address: "1 Placeholder Way, Vancouver BC", country_code: "CA", timezone: "America/Vancouver" },
+  { id: "0d6a1b2c-0000-4000-8000-00000000040a", name: "DC - Vancouver", networktemplate_id: "swtpl-campus", address: "1 Placeholder Way, Vancouver BC", country_code: "CA", timezone: "America/Vancouver" },
   { id: "site-cgy", name: "Branch - Calgary", networktemplate_id: "swtpl-campus", address: "40 Example Blvd, Calgary AB", country_code: "CA", timezone: "America/Edmonton" },
   { id: "site-hfx", name: "Branch - Halifax", networktemplate_id: "swtpl-branch", address: "9 Sample Wharf, Halifax NS", country_code: "CA", timezone: "America/Halifax" },
   { id: "site-wpg", name: "Store - Winnipeg", networktemplate_id: "swtpl-branch", address: "300 Demo Ave, Winnipeg MB", country_code: "CA", timezone: "America/Winnipeg" },
@@ -30,10 +33,10 @@ const SWITCHES = [
   { id: "dev-idf2", site: "site-hq", name: "hq-idf-2", model: "EX2300-48P", serial: "DEMO2300B2", mac: mac(0x112), version: "22.4R3-S2", status: "connected", ip: "10.10.0.12" },
   { id: "dev-ott", site: "site-ott", name: "ott-sw1", model: "EX4100-24P", serial: "DEMO4100C1", mac: mac(0x201), version: "23.4R2-S3", status: "connected", ip: "10.20.0.2" },
   { id: "dev-mtl", site: "site-mtl", name: "mtl-sw1", model: "EX2300-C-12P", serial: "DEMO2300D1", mac: mac(0x301), version: "21.4R3-S5", status: "disconnected", ip: "10.30.0.2" },
-  { id: "dev-van1", site: "site-van", name: "van-core-1", model: "EX4650-48Y", serial: "DEMO4650E1", mac: mac(0x401), version: "23.4R2-S3", status: "connected", ip: "10.40.0.2" },
-  { id: "dev-van2", site: "site-van", name: "van-core-2", model: "EX4650-48Y", serial: "DEMO4650E2", mac: mac(0x402), version: "23.4R2-S3", status: "connected", ip: "10.40.0.3" },
-  { id: "dev-van3", site: "site-van", name: "van-acc-1", model: "EX4100-48P", serial: "DEMO4100E3", mac: mac(0x403), version: "23.4R2-S3", status: "connected", ip: "10.40.0.11" },
-  { id: "dev-van4", site: "site-van", name: "van-acc-2", model: "EX4100-48P", serial: "DEMO4100E4", mac: mac(0x404), version: "22.4R3-S2", status: "disconnected", ip: "10.40.0.12" },
+  { id: "dev-van1", site: "0d6a1b2c-0000-4000-8000-00000000040a", name: "van-core-1", model: "EX4650-48Y", serial: "DEMO4650E1", mac: mac(0x401), version: "23.4R2-S3", status: "connected", ip: "10.40.0.2" },
+  { id: "dev-van2", site: "0d6a1b2c-0000-4000-8000-00000000040a", name: "van-core-2", model: "EX4650-48Y", serial: "DEMO4650E2", mac: mac(0x402), version: "23.4R2-S3", status: "connected", ip: "10.40.0.3" },
+  { id: "dev-van3", site: "0d6a1b2c-0000-4000-8000-00000000040a", name: "van-acc-1", model: "EX4100-48P", serial: "DEMO4100E3", mac: mac(0x403), version: "23.4R2-S3", status: "connected", ip: "10.40.0.11" },
+  { id: "dev-van4", site: "0d6a1b2c-0000-4000-8000-00000000040a", name: "van-acc-2", model: "EX4100-48P", serial: "DEMO4100E4", mac: mac(0x404), version: "22.4R3-S2", status: "disconnected", ip: "10.40.0.12" },
   { id: "dev-cgy1", site: "site-cgy", name: "cgy-sw1", model: "EX4100-24P", serial: "DEMO4100F1", mac: mac(0x411), version: "23.4R2-S3", status: "connected", ip: "10.50.0.2" },
   { id: "dev-cgy2", site: "site-cgy", name: "cgy-sw2", model: "EX2300-24P", serial: "DEMO2300F2", mac: mac(0x412), version: "21.4R3-S5", status: "disconnected", ip: "10.50.0.3" },
   { id: "dev-hfx", site: "site-hfx", name: "hfx-sw1", model: "EX2300-C-12P", serial: "DEMO2300G1", mac: mac(0x421), version: "22.4R3-S2", status: "connected", ip: "10.60.0.2" },
@@ -142,7 +145,7 @@ const OTHER_DEVICES = [
   ...Array.from({ length: 14 }, (_, i) => ({ type: "ap", mac: mac(0x600 + i), model: "AP45", site_id: "site-hq", connected: i !== 9 })),
   ...Array.from({ length: 5 }, (_, i) => ({ type: "ap", mac: mac(0x700 + i), model: "AP34", site_id: "site-ott", connected: true })),
   ...Array.from({ length: 3 }, (_, i) => ({ type: "ap", mac: mac(0x800 + i), model: "AP24", site_id: "site-mtl", connected: i !== 2 })),
-  ...Array.from({ length: 8 }, (_, i) => ({ type: "ap", mac: mac(0x810 + i), model: "AP45", site_id: "site-van", connected: i !== 6 })),
+  ...Array.from({ length: 8 }, (_, i) => ({ type: "ap", mac: mac(0x810 + i), model: "AP45", site_id: "0d6a1b2c-0000-4000-8000-00000000040a", connected: i !== 6 })),
   ...Array.from({ length: 4 }, (_, i) => ({ type: "ap", mac: mac(0x820 + i), model: "AP34", site_id: "site-cgy", connected: true })),
   ...Array.from({ length: 2 }, (_, i) => ({ type: "ap", mac: mac(0x830 + i), model: "AP24", site_id: "site-hfx", connected: true })),
   ...Array.from({ length: 3 }, (_, i) => ({ type: "ap", mac: mac(0x840 + i), model: "AP34", site_id: "site-wpg", connected: i !== 0 })),
@@ -192,7 +195,7 @@ const SITE_SETTING = {
     switch_matching: { enable: true, rules: [{ name: "core", match_role: "core", additional_config_cmds: ["set protocols ospf area 0.0.0.0 interface irb.10 passive"] }] } },
   "site-ott": { additional_config_cmds: ["set snmp location \"Branch - Ottawa\"", "set system ntp server 192.0.2.123"] },
   "site-mtl": {},
-  "site-van": { additional_config_cmds: ["set snmp location \"DC - Vancouver, Hall B\"", "set system syslog host 192.0.2.11 any notice"] },
+  "0d6a1b2c-0000-4000-8000-00000000040a": { additional_config_cmds: ["set snmp location \"DC - Vancouver, Hall B\"", "set system syslog host 192.0.2.11 any notice"] },
   "site-cgy": { additional_config_cmds: ["set snmp location \"Branch - Calgary\""] },
   "site-hfx": {},
   "site-wpg": { additional_config_cmds: ["set snmp location \"Store - Winnipeg\""] },
@@ -214,7 +217,7 @@ const WLANS = {
     { id: "w-scan", ssid: "DemoScanners", enabled: false, auth: { type: "psk", pairwise: ["wpa2-ccmp"] }, vlan_enabled: false, band: "24", interface: "all", site_id: "site-mtl" },
   ],
 };
-for (const site of ["site-van", "site-cgy", "site-hfx", "site-wpg", "site-qc"]) WLANS[site] = WLANS["site-ott"];
+for (const site of ["0d6a1b2c-0000-4000-8000-00000000040a", "site-cgy", "site-hfx", "site-wpg", "site-qc"]) WLANS[site] = WLANS["site-ott"];
 WLANS["site-wpg"] = [...WLANS["site-ott"],
   { id: "w-pos", ssid: "DemoPOS", enabled: true, hide_ssid: true, auth: { type: "psk", pairwise: ["wpa3"] }, vlan_enabled: true, vlan_id: 50, bands: ["5"], interface: "all", site_id: "site-wpg" }];
 
@@ -235,7 +238,7 @@ function clients(siteId, count, subnet) {
   });
 }
 const CLIENTS = { "site-hq": clients("site-hq", 9, 10), "site-ott": clients("site-ott", 5, 20), "site-mtl": clients("site-mtl", 3, 30),
-  "site-van": clients("site-van", 7, 40), "site-cgy": clients("site-cgy", 4, 50), "site-hfx": clients("site-hfx", 2, 60),
+  "0d6a1b2c-0000-4000-8000-00000000040a": clients("0d6a1b2c-0000-4000-8000-00000000040a", 7, 40), "site-cgy": clients("site-cgy", 4, 50), "site-hfx": clients("site-hfx", 2, 60),
   "site-wpg": clients("site-wpg", 3, 70), "site-qc": clients("site-qc", 3, 80) };
 
 // SSID Banned / Approved Clients: the org's template SSIDs, HQ's own SSID, and a
@@ -334,7 +337,7 @@ const GATEWAYS = [
   { site: "site-hq", name: "hq-ssr", model: "SSR130", mac: mac(0x701) },
   { site: "site-ott", name: "ott-ssr", model: "SSR120", mac: mac(0x702) },
   { site: "site-mtl", name: "mtl-srx", model: "SRX320", mac: mac(0x703) },
-  { site: "site-van", name: "van-ssr", model: "SSR130", mac: mac(0x704) },
+  { site: "0d6a1b2c-0000-4000-8000-00000000040a", name: "van-ssr", model: "SSR130", mac: mac(0x704) },
   { site: "site-cgy", name: "cgy-ssr", model: "SSR120", mac: mac(0x705) },
 ];
 const gatewayStats = (gw) => ({ type: "gateway", status: "connected", site_id: gw.site, name: gw.name, model: gw.model, mac: gw.mac });
@@ -352,8 +355,8 @@ const BGP_PEERS = [
   bgpRow(mac(0x702), "site-ott", { neighbor: "198.51.100.1", neighbor_as: 64497, local_as: 65100, vrf_name: "internet", rx_routes: 1, tx_routes: 4 }),
   bgpRow(mac(0x703), "site-mtl", { neighbor: "192.0.2.65", neighbor_as: 64498, local_as: 65100, vrf_name: "internet",
     state: "active", up: false, rx_routes: 0, tx_routes: 0, flap_count: 3, uptime: 0 }),
-  bgpRow(mac(0x401), "site-van", { neighbor: "10.40.0.1", neighbor_as: 65100, local_as: 65040, rx_routes: 6, tx_routes: 9, uptime: 2592000 }),
-  bgpRow(mac(0x704), "site-van", { neighbor: "203.0.113.129", neighbor_as: 64499, local_as: 65100, vrf_name: "internet", rx_routes: 1, tx_routes: 8 }),
+  bgpRow(mac(0x401), "0d6a1b2c-0000-4000-8000-00000000040a", { neighbor: "10.40.0.1", neighbor_as: 65100, local_as: 65040, rx_routes: 6, tx_routes: 9, uptime: 2592000 }),
+  bgpRow(mac(0x704), "0d6a1b2c-0000-4000-8000-00000000040a", { neighbor: "203.0.113.129", neighbor_as: 64499, local_as: 65100, vrf_name: "internet", rx_routes: 1, tx_routes: 8 }),
   bgpRow(mac(0x705), "site-cgy", { neighbor: "198.51.100.129", neighbor_as: 64500, local_as: 65100, vrf_name: "internet", rx_routes: 1, tx_routes: 3, flap_count: 2, uptime: 5400 }),
 ];
 
@@ -393,7 +396,7 @@ const ALARMS = {
   "site-mtl": [
     { id: "al-4", type: "switch_offline", timestamp: NOW - 86000, last_seen: NOW - 120, count: 1, switches: [mac(0x301)], hostnames: ["mtl-sw1"], status: "open", acked: false },
   ],
-  "site-van": [
+  "0d6a1b2c-0000-4000-8000-00000000040a": [
     { id: "al-5", type: "sw_psu_failure", timestamp: NOW - 14400, last_seen: NOW - 300, count: 1, switches: [mac(0x402)], hostnames: ["van-core-2"], reasons: ["Power Supply 0 failed"], status: "open", acked: false },
     { id: "al-6", type: "switch_offline", timestamp: NOW - 10800, last_seen: NOW - 300, count: 1, switches: [mac(0x404)], hostnames: ["van-acc-2"], status: "open", acked: true, ack_admin_name: "Demo Admin" },
   ],
@@ -409,6 +412,20 @@ const ALARMS = {
 // ---- Mist router --------------------------------------------------------------
 
 /** Answer one Mist API GET. Returns { status, body } or null for "not found". */
+/**
+ * POST /sites/{site}/devices/{id}/shell: the CLI session Port Stats Correlator
+ * opens. Connected Vancouver switches get a wss:// address on the region's
+ * api-ws host, which capture.mjs points at fakeswitch.mjs; the address's jwt
+ * names the switch. A disconnected switch gets the 404 Mist gives.
+ */
+export function shellSession(path, host) {
+  const m = path.match(/^\/sites\/([^/]+)\/devices\/00000000-0000-0000-1000-([0-9a-f]{12})\/shell$/);
+  if (!m) return null;
+  const sw = SWITCHES.find((s) => s.site === m[1] && s.mac === m[2]);
+  if (!sw || sw.status !== "connected") return { status: 404, body: { detail: "device is not connected" } };
+  return { body: { session: `demo-${sw.mac}`, url: `wss://${host.replace(/^api\./, "api-ws.")}/ssh?jwt=${sw.mac}` } };
+}
+
 export function mist(path, query, host = "api.mist.com") {
   const m = (re) => path.match(re);
   let r;

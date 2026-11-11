@@ -7,14 +7,17 @@
 // handed to a tool, never stored, never messaged to the service worker, never
 // logged. The page's CSP (toolbox.html) only lets it reach the Mist regions.
 
-import { DEFAULT_MIST_HOST, MIST_REGIONS } from "./engine/util.js";
+import { DEFAULT_MIST_HOST, MIST_REGIONS, mistDeviceId } from "./engine/util.js";
 import { download, safeName, stampedName, toCsv } from "./lib/download.js";
 import {
   $, epochToUtc, esc, fmtBytes, fmtMac, fmtTime, previewTable,
 } from "./lib/dom.js";
 import { getAll, searchAll } from "./lib/paginate.js";
 import { STYLE, colLetter, sheet, workbook } from "./lib/xlsx.js";
-import { POOL_LIMIT, listSites, mistConnect, mistGet, mistGetFull, mistWrite, pool } from "./mist.js";
+import {
+  POOL_LIMIT, listSites, mistConnect, mistGet, mistGetFull, mistWrite, openDeviceShell, pool,
+} from "./mist.js";
+import { ShellSession, validateShowCommand } from "./lib/junos-shell.js";
 import { tokenAccess } from "./lib/access.js";
 import { effectiveParams, resolveSites, scopeChip } from "./lib/scope.js";
 import { checkToolSource, toolFilename } from "./lib/toolcheck.js";
@@ -51,6 +54,7 @@ MIST_REGIONS.forEach((r) => {
 hostSel.value = DEFAULT_MIST_HOST;
 
 function show(view) {
+  if (view !== "tool") closeShells();
   $("viewHome").classList.toggle("hidden", view !== "home");
   $("viewTool").classList.toggle("hidden", view !== "tool");
   $("btnHome").classList.toggle("hidden", view === "home");
@@ -95,6 +99,7 @@ function updateAccess() {
 // ---------------------------------------------------------------------------
 
 async function connect() {
+  closeShells();
   setErr("");
   $("btnConnect").disabled = true;
   try {
@@ -138,6 +143,7 @@ function fillSelect(el, items) {
 }
 
 function wipe(message) {
+  closeShells();
   state.token = ""; state.email = ""; state.orgs = []; state.orgId = "";
   state.privileges = []; state.access = null;
   state.connected = false; state.sites = null; state.tool = null;
@@ -157,7 +163,7 @@ $("btnConnect").onclick = connect;
 $("token").addEventListener("keydown", (e) => {
   if (e.key === "Enter") { e.preventDefault(); connect(); }
 });
-$("org").onchange = () => { state.orgId = $("org").value; state.sites = null; updateAccess(); };
+$("org").onchange = () => { closeShells(); state.orgId = $("org").value; state.sites = null; updateAccess(); };
 $("btnWipe").onclick = () => wipe("Session ended. The token has been wiped.");
 $("btnHome").onclick = () => show("home");
 $("crumbHome").onclick = () => show("home");
@@ -180,9 +186,12 @@ function renderGrid() {
     const added = removable(t.__file);
     const tag = locked ? "validate a token to use" : (t.tag || (needsToken ? "Mist API" : "standalone"));
     const chip = scopeChip(t);
-    const kind = t.__writes
+    const kind = (t.__writes
       ? '<span class="kind-chip kind-writes" title="This tool can change your Mist configuration">Makes changes</span>'
-      : '<span class="kind-chip kind-read">Read-only</span>';
+      : '<span class="kind-chip kind-read">Read-only</span>')
+      + (t.__cli
+        ? ' <span class="kind-chip kind-read" title="Opens a CLI session on switches and runs read-only show commands">CLI show commands</span>'
+        : "");
     return `<div class="tool-slot">
       <button class="tool-card${t.__writes ? " writes" : ""}" data-tool="${esc(t.id)}" type="button"${locked ? ' disabled aria-disabled="true"' : ""}>
         <h2>${esc(t.name)}${chip ? ` <span class="scope-chip">${esc(chip)}</span>` : ""}</h2>
@@ -529,6 +538,7 @@ function status(text) { $("runStatus").textContent = text || ""; }
 async function openTool(id) {
   const tool = state.tools.find((t) => t.id === id);
   if (!tool) return;
+  closeShells();
   state.tool = tool;
   setErr("");
   $("toolName").textContent = tool.name;
@@ -585,6 +595,54 @@ function writeFor(tool, method, path, body, params) {
   return mistWrite(state.host, state.token, method, path, body, params);
 }
 
+// ---------------------------------------------------------------------------
+// CLI sessions (ctx.junosShow)
+// ---------------------------------------------------------------------------
+
+// One CLI session per device, opened on first use and kept for the tool's
+// next command. All of them close when the user leaves the tool, opens
+// another, changes org, wipes the token or closes the tab.
+const MAX_SHELLS = 16;
+const shells = new Map();   // "siteId|deviceId" -> Promise<ShellSession>
+
+function closeShells() {
+  for (const p of shells.values()) p.then((s) => s.close(), () => {});
+  shells.clear();
+}
+window.addEventListener("pagehide", closeShells);
+
+/** ctx.junosShow: run a read-only show command on a device and return its JSON. */
+async function junosShowFor(siteId, device, command) {
+  const cmd = validateShowCommand(command);
+  if (!state.connected) throw new Error("Validate a Mist token first.");
+  const raw = String(device || "").toLowerCase();
+  const hex = raw.replace(/[^0-9a-f]/g, "");
+  const deviceId = hex.length === 12 && !raw.includes("-") ? mistDeviceId(hex) : raw;
+  const key = `${siteId}|${deviceId}`;
+  let p = shells.get(key);
+  if (p) {
+    const s = await p.catch(() => null);
+    if (!s || s.closed) { if (shells.get(key) === p) shells.delete(key); p = null; }
+  }
+  if (!p) {
+    if (shells.size >= MAX_SHELLS) {
+      const [oldest, old] = shells.entries().next().value;
+      shells.delete(oldest);
+      old.then((s) => s.close(), () => {});
+    }
+    const host = state.host;
+    p = openDeviceShell(host, state.token, siteId, deviceId).then((ws) => new ShellSession(ws).start());
+    shells.set(key, p);
+    p.catch(() => { if (shells.get(key) === p) shells.delete(key); });
+  } else {
+    // Most recently used goes to the back, so the oldest idle one is closed first.
+    shells.delete(key);
+    shells.set(key, p);
+  }
+  const session = await p;
+  return session.show(cmd);
+}
+
 function buildCtx(tool, params) {
   const ctl = new AbortController();
   state.ctl = ctl;
@@ -603,6 +661,7 @@ function buildCtx(tool, params) {
     mistGet: (path, p, t) => mistGet(state.host, state.token, path, p, t),
     mistGetFull: (path, p, t) => mistGetFull(state.host, state.token, path, p, t),
     mistWrite: (method, path, body, p) => writeFor(tool, method, path, body, p),
+    junosShow: (siteId, device, command) => junosShowFor(siteId, device, command),
     getAll: (path, p, onPage) => getAll({ ...paged, onPage }, path, p),
     searchAll: (path, p, onPage) => searchAll({ ...paged, onPage }, path, p),
     listSites: () => listSites(state.token, state.host, state.orgId),

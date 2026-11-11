@@ -24,10 +24,10 @@ import {
   RadioEventStore, attachApNames, pickRrmEvent, rrmEventsQuery, rrmRowsFrom,
 } from "./engine/rrm.js";
 import {
-  EVENT_PAGES, MIST_HOSTS, RADIO_EVENTS_DURATION, RRM_PAGES_ADAPT_5, RRM_PAGES_LIVE_5,
+  EVENT_PAGES, MIST_HOSTS, MIST_WS_HOSTS, RADIO_EVENTS_DURATION, RRM_PAGES_ADAPT_5, RRM_PAGES_LIVE_5,
   RRM_PAGES_LIVE_OTHER, RRM_TIMEOUT, SESSION_PAGES, TIMEOUT,
   asArray, asRecord, durationSeconds, epochS, formatMac, hexMac, mistDeviceId,
-  normalizeMac, num, rrmPagesForBand, rrmTimeSlices, utilPct,
+  normalizeMac, num, rrmPagesForBand, rrmTimeSlices, utilPct, wsHostFor,
 } from "./engine/util.js";
 import { buildVerdict } from "./engine/verdict.js";
 
@@ -171,6 +171,49 @@ async function mistRequest(host, token, method, path, { params = null, body, tim
     const text = (await resp.text()).slice(0, 180);
     throw new MistError(`Mist API ${resp.status}: ${text || resp.statusText}`, resp.status, path);
   }
+}
+
+const SHELL_PATH = /^\/sites\/[0-9a-f-]{36}\/devices\/[0-9a-f-]{36}\/shell$/;
+
+/**
+ * Open a CLI session on one device and return its WebSocket, not yet open.
+ *
+ * POST .../shell changes nothing on the device: Mist answers with a wss://
+ * URL that carries its own short-lived JWT, which is how a browser socket
+ * (which cannot send an Authorization header) authenticates. The API token
+ * goes only on the POST, through mistRequest. The URL is checked to be the
+ * selected region's WebSocket host before anything connects to it, and it is
+ * never logged or put in an error message, because the JWT in it is a
+ * credential. lib/junos-shell.js speaks the protocol and only lets read-only
+ * `show` commands through.
+ */
+export async function openDeviceShell(host, token, siteId, deviceId) {
+  const path = `/sites/${siteId}/devices/${deviceId}/shell`;
+  if (!SHELL_PATH.test(path)) throw new MistError("A CLI session needs a Mist site id and device id.");
+  let data;
+  try {
+    ({ data } = await mistRequest(host, token, "POST", path, { body: {} }));
+  } catch (e) {
+    if (e.status === 403) {
+      throw new MistError("Your token may not open a CLI session on this switch (403). Remote shell needs an "
+        + "admin-level role in Mist.", 403, path);
+    }
+    throw e;
+  }
+  const wsHost = wsHostFor(host);
+  let url;
+  try {
+    url = new URL(String(data?.url || ""));
+  } catch {
+    throw new MistError("Mist did not return a CLI session address.", null, path);
+  }
+  if (url.protocol !== "wss:" || !MIST_WS_HOSTS.includes(url.hostname) || url.hostname !== wsHost
+    || !url.pathname.startsWith("/ssh")) {
+    throw new MistError("Mist returned a CLI session address outside the selected region; not connecting.", null, path);
+  }
+  const socket = new WebSocket(url.href);
+  socket.binaryType = "arraybuffer";
+  return socket;
 }
 
 /** GET a list endpoint that may 403/404 when the org lacks the feature (Teams, RRM events). */

@@ -25,6 +25,7 @@ Tools run in the browser, so these do **not** exist:
 | `process.argv`, terminal prompts, `getpass` | `params` (a form the toolbox draws) |
 | `process.env.MIST_TOKEN`, token prompts | the token bar at the top of the toolbox; `needs: { mistToken: true }`. Tools never see the token itself |
 | `fetch(...)`, `requests.get`, axios | `ctx.getAll(path)` / `ctx.mistGet(path)` |
+| SSH, Netmiko or PyEZ to a switch for `show` output | `ctx.junosShow(siteId, switchMac, "show …")` (section 3, *Live switch CLI*) |
 | `requests.post/put/delete` | `ctx.mistWrite(method, path, body)`, in a tool that declares `writes: true` (section 5) |
 | ExcelJS, openpyxl, pandas, `fs.writeFile` | return `sheets` from `run()`; the toolbox writes the `.xlsx` |
 | `console.log`, `print` | `ctx.log(message, kind)` |
@@ -154,6 +155,7 @@ Other keys: `label`, `default`, `hint` (small text under the field),
 | `ctx.getAll` | `await ctx.getAll(path, params?)` follows every page and returns one array. Handles both Mist pagination styles. **Use this for lists.** |
 | `ctx.searchAll` | Same for `/search` endpoints (follows the `next` cursor) |
 | `ctx.mistWrite` | `await ctx.mistWrite(method, path, body?, params?)` sends one change (`"POST"`, `"PUT"`, `"PATCH"` or `"DELETE"`) and returns the parsed reply. Only for tools labelled **Makes changes**; never retried; each call is logged. See section 5 |
+| `ctx.junosShow` | `await ctx.junosShow(siteId, device, "show interfaces extensive ge-0/0/1")` runs one read-only `show` command on a switch through Mist's remote shell and returns its parsed JSON. `device` is the switch MAC or Mist device id. See *Live switch CLI* below |
 | `ctx.listSites` | `await ctx.listSites()` returns every site in the org as `{id, name}`, sorted |
 | `ctx.targetSites` | For `scope: "site"` tools: `await ctx.targetSites()` returns the sites the user chose (see above) |
 | `ctx.pool` | `await ctx.pool(limit, [() => promise, …])` runs jobs in parallel, results in input order |
@@ -177,6 +179,40 @@ Paths are relative to `/api/v1`, e.g. `ctx.getAll(`/orgs/${ctx.orgId}/sites`)`.
 Booleans in `params` are sent as the strings `"true"`/`"false"`, which is what
 Mist expects. A non-2xx response throws an `Error` whose message says what
 happened. Catch it per site if one failing site shouldn't stop the report.
+
+### Live switch CLI: `ctx.junosShow`
+
+Mist's REST stats are what each switch reports about once a minute, and they
+leave out most of what `show interfaces extensive` prints (CRC, FIFO and MTU
+errors, runts, per-queue drops…). `ctx.junosShow` asks the switch directly:
+
+```js
+const json = await ctx.junosShow(site.id, sw.mac, "show interfaces extensive ge-0/0/1");
+// json is Junos `| display json` output: { "interface-information": [ … ] }
+```
+
+- **Read-only, by construction.** Only plain `show …` commands are accepted:
+  letters, digits, spaces and `_ . / : * , -`. No pipes, `;`, line breaks, and
+  no `request`, `set`, `clear`, `file` or similar words. The toolbox adds
+  `| display json | no-more` itself. Anything else throws before it reaches
+  the switch.
+- **How it connects.** The toolbox asks Mist for a remote-shell session
+  (`POST /sites/{site}/devices/{id}/shell`), and Mist returns a `wss://api-ws.…`
+  address carrying its own short-lived key. The toolbox opens that socket, so
+  tools still never open connections or see the token. One session per switch
+  is kept open while the tool is on screen, so repeated commands answer in
+  under a second or two. Sessions close when the user leaves the tool, changes
+  org, wipes the token or closes the tab.
+- **Who can use it.** Any tool may call it; its card then shows a
+  **CLI show commands** chip. Mist only opens a shell for admin-level tokens.
+  Anyone else gets an `Error` saying so (403), so catch it and fall back to
+  the REST stats.
+- **Parsing.** Junos wraps every value as `[{"data": "…"}]`.
+  `import { junosJson, interfaceCounters } from "../lib/junos-shell.js"`
+  unwraps it. `interfaceCounters(json)` gives one flat record per interface
+  with `mtu`, `speed`, `operStatus`, `counters` (keys like
+  `"in.input-errors"`, `"out.mtu-errors"`, `"mac.input-crc-errors"`) and
+  `queues`.
 
 
 ## 4. What `run()` returns

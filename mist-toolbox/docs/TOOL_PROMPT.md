@@ -51,6 +51,7 @@ on (one, or all), `orgSites` every site for name lookups, and `fileLabel` goes i
 - `await ctx.mistGet(path, params?)` → parsed JSON of one GET. `ctx.mistGetFull` → `{data, headers}`.
 - `await ctx.searchAll(path, params?)` → array, for `/search` endpoints.
 - `await ctx.mistWrite(method, path, body?, params?)` → sends one change (`"POST"`, `"PUT"`, `"PATCH"`, `"DELETE"`), returns the parsed reply. Only for tools with `writes: true`. Never retried; a 403 means the token may not make the change.
+- `await ctx.junosShow(siteId, switchMacOrDeviceId, "show …")` → parsed Junos `| display json` output of one read-only `show` command, run on the switch through Mist's remote shell. Only plain `show` commands (letters, digits, spaces, `_ . / : * , -`; no pipes) are accepted. Needs an admin-level token: catch the Error (403) and fall back to the REST stats. `import { interfaceCounters, junosJson } from "../lib/junos-shell.js"` flattens the Junos JSON. Use it when the script SSHes to switches (Netmiko, PyEZ) for `show` output.
 - Paths are relative to `/api/v1`, e.g. `` `/orgs/${ctx.orgId}/sites` ``. Non-2xx throws an Error.
 - `await ctx.pool(ctx.POOL_LIMIT, jobs)` — run an array of `() => promise` with limited parallelism; results keep input order.
 - `ctx.log(msg, "info" | "ok" | "err")`, `ctx.progress(done, total, label)`, `ctx.status(text)`
@@ -66,7 +67,7 @@ Throw an `Error` to fail with a message.
 ## Hard rules — the toolbox refuses files that break them
 
 1. **No Node or Python APIs**: no `require`, `module.exports`, `process.*`, `__dirname`, `fs`, `readline`, no npm packages.
-2. **No direct network**: no `fetch`, `XMLHttpRequest`, `WebSocket`, `EventSource`, `navigator.sendBeacon`, axios. Read with `ctx.getAll` / `ctx.mistGet` / `ctx.searchAll`; change with `ctx.mistWrite`. The page's security policy blocks every host except the Mist regions anyway.
+2. **No direct network**: no `fetch`, `XMLHttpRequest`, `WebSocket`, `EventSource`, `navigator.sendBeacon`, axios. Read with `ctx.getAll` / `ctx.mistGet` / `ctx.searchAll`, or `ctx.junosShow` for switch CLI output; change with `ctx.mistWrite`. The page's security policy blocks every host except the Mist regions anyway.
 3. **Read-only by default**: GET through the ctx helpers. POST/PUT/PATCH/DELETE are **allowed only through `ctx.mistWrite`** in a tool that declares `writes: true` and follows "Tools that make changes" below. The toolbox warns strongly about such a tool at install, labels it "Makes changes", and asks the user to confirm before it runs.
 4. **No storage**: no `localStorage`, `sessionStorage`, `indexedDB`, `chrome.storage`, cookies.
 5. **No `console.*`** — use `ctx.log`. **No `eval` / `new Function` / dynamic `import()`.** No `chrome.runtime.sendMessage` / `connect`.

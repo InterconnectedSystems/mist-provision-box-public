@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Mist Provision Box",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Juniper Mist and SSR tools, read-only by default: switch, Wi-Fi and alarm reports, disconnect RCA, SSR pre/post checks.",
   "minimum_chrome_version": "116",
   "background": { "service_worker": "background.js", "type": "module" },
@@ -26,5 +26,5 @@
     "https://api.us.mist-federal.com/*"
   ],
   "optional_host_permissions": ["https://*/*"],
-  "content_security_policy": { "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https:" }
+  "content_security_policy": { "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https: wss://api-ws.mist.com wss://api-ws.gc1.mist.com wss://api-ws.ac2.mist.com wss://api-ws.gc2.mist.com wss://api-ws.gc4.mist.com wss://api-ws.eu.mist.com wss://api-ws.gc3.mist.com wss://api-ws.ac6.mist.com wss://api-ws.gc6.mist.com wss://api-ws.ac5.mist.com wss://api-ws.gc5.mist.com wss://api-ws.gc7.mist.com wss://api-ws.us.mist-federal.com" }
 }
