@@ -1,5 +1,19 @@
 # Mist Provision Box
 
+**A workbench for Juniper Mist and SSR workflows that you can extend yourself.**
+Mist Provision Box is a Chrome/Edge extension that turns Mist API work into one-click tools: pick
+an org, pick a site, run the tool, and get the answer on screen and as an Excel workbook. It ships
+with 17 built-in tools for reports, troubleshooting and firmware upgrades, and they are only the
+starting point.
+
+**Create your own.** A tool is one JavaScript file. The extension supplies everything around it:
+the menu card, credentials, site picker, settings form, progress, preview and Excel output.
+Describe the workflow you want (or paste a script you already have) to any AI assistant along with
+the built-in prompt, install the file it gives you, and it appears in the menu.
+[How to create a tool](#create-your-own-tools).
+
+No Python, no server, nothing to install beyond the extension.
+
 <p align="center">
   <a href="https://github.com/InterconnectedSystems/mist-provision-box-public/releases/latest/download/mist-provision-box.zip"><img src=".github/download-button.svg" alt="Download mist-provision-box.zip (latest release)" width="440"></a>
 </p>
@@ -33,16 +47,12 @@ updating and troubleshooting: **[INSTALL.md](INSTALL.md)**.
 
 ## About
 
-**Juniper Mist and Juniper SSR tools in a browser extension: read-only reporting by default,
-and tools that make changes when you need them.** Mist Provision Box is the write-enabled
-edition of Mist Toolbox. Paste a Mist API token, pick an org (and optionally one site), pick a
-tool, and get the answer on screen and as a styled Excel workbook. The built-in tools only read,
-except **Switch Site Upgrade** and **AP Site Upgrade**, which schedule firmware upgrades, and
-**SSID Banned / Approved Clients**, which sets Mist's client lists. A tool that makes
-changes, built in or added by you, is labelled **Makes changes**, warned about when you install
-it, and asks for confirmation before it runs.
-There is no Python, no server and no install beyond the extension, and the extension ships its
-own **LLM spec**, so any AI assistant can turn a script or a one-line idea into a new tool.
+**Read-only reporting by default, and tools that make changes when you need them.** Mist Provision
+Box is the write-enabled edition of Mist Toolbox. The built-in tools only read, except
+**Switch Site Upgrade** and **AP Site Upgrade**, which schedule firmware upgrades, and
+**SSID Banned / Approved Clients**, which sets Mist's client lists. A tool that makes changes,
+built in or added by you, is labelled **Makes changes**, warned about when you install it, and
+asks for confirmation before it runs.
 
 **[Install guide](INSTALL.md)** · **[Add your own tools](ADDING_TOOLS.md)** · [All releases](https://github.com/InterconnectedSystems/mist-provision-box-public/releases/latest) · [Extension README](mist-toolbox/README.md)
 
@@ -148,7 +158,7 @@ own **LLM spec**, so any AI assistant can turn a script or a one-line idea into 
   reach any host except the Mist regions in the region list. Live switch CLI sessions (Port Stats
   Correlator) go to the same regions' Mist `api-ws` hosts and run only `show` commands.
 
-## Additive: bring your own tools, with the LLM spec built in
+## Create your own tools
 
 The tools above are a starting point. A tool is one JavaScript file, and the toolbox provides
 everything around it: the menu card, credentials, site picker, settings form, progress, preview
