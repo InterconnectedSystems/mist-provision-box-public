@@ -1,0 +1,527 @@
+{
+    "interface-information": [
+        {
+            "attributes": {
+                "xmlns": "http://xml.juniper.net/junos/24.4R0/junos-interface"
+            },
+            "physical-interface": [
+                {
+                    "name": [
+                        {
+                            "data": "ge-0/0/1"
+                        }
+                    ],
+                    "admin-status": [
+                        {
+                            "data": "up",
+                            "attributes": {
+                                "junos:format": "Enabled"
+                            }
+                        }
+                    ],
+                    "oper-status": [
+                        {
+                            "data": "up"
+                        }
+                    ],
+                    "mtu": [
+                        {
+                            "data": "1514"
+                        }
+                    ],
+                    "link-mode": [
+                        {
+                            "data": "Full-duplex"
+                        }
+                    ],
+                    "speed": [
+                        {
+                            "data": "2500mbps"
+                        }
+                    ],
+                    "current-physical-address": [
+                        {
+                            "data": "02:00:00:00:00:01"
+                        }
+                    ],
+                    "interface-flapped": [
+                        {
+                            "data": "2026-10-01 09:00:00 UTC (1w0d 00:00 ago)"
+                        }
+                    ],
+                    "statistics-cleared": [
+                        {
+                            "data": "Never"
+                        }
+                    ],
+                    "traffic-statistics": [
+                        {
+                            "attributes": {
+                                "junos:style": "verbose"
+                            },
+                            "input-bytes": [
+                                {
+                                    "data": "27631800"
+                                }
+                            ],
+                            "input-bps": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "output-bytes": [
+                                {
+                                    "data": "106461976"
+                                }
+                            ],
+                            "output-bps": [
+                                {
+                                    "data": "312"
+                                }
+                            ],
+                            "input-packets": [
+                                {
+                                    "data": "81270"
+                                }
+                            ],
+                            "input-pps": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "output-packets": [
+                                {
+                                    "data": "1267216"
+                                }
+                            ],
+                            "output-pps": [
+                                {
+                                    "data": "0"
+                                }
+                            ]
+                        }
+                    ],
+                    "input-error-list": [
+                        {
+                            "input-errors": [
+                                {
+                                    "data": "12"
+                                }
+                            ],
+                            "input-drops": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "framing-errors": [
+                                {
+                                    "data": "3"
+                                }
+                            ],
+                            "input-runts": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "input-discards": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "input-l3-incompletes": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "input-l2-channel-errors": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "input-l2-mismatch-timeouts": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "input-fifo-errors": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "input-resource-errors": [
+                                {
+                                    "data": "0"
+                                }
+                            ]
+                        }
+                    ],
+                    "output-error-list": [
+                        {
+                            "carrier-transitions": [
+                                {
+                                    "data": "1"
+                                }
+                            ],
+                            "output-errors": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "output-collisions": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "output-drops": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "aged-packets": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "mtu-errors": [
+                                {
+                                    "data": "5"
+                                }
+                            ],
+                            "hs-link-crc-errors": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "output-fifo-errors": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "output-resource-errors": [
+                                {
+                                    "data": "0"
+                                }
+                            ]
+                        }
+                    ],
+                    "queue-counters": [
+                        {
+                            "attributes": {
+                                "junos:style": "brief"
+                            },
+                            "interface-cos-short-summary": [
+                                {
+                                    "intf-cos-queue-type": [
+                                        {
+                                            "data": "Egress queues"
+                                        }
+                                    ],
+                                    "intf-cos-num-queues-supported": [
+                                        {
+                                            "data": "12"
+                                        }
+                                    ],
+                                    "intf-cos-num-queues-in-use": [
+                                        {
+                                            "data": "11"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "queue": [
+                                {
+                                    "queue-number": [
+                                        {
+                                            "data": "0"
+                                        }
+                                    ],
+                                    "forwarding-class-name": [
+                                        {
+                                            "data": "default-app"
+                                        }
+                                    ],
+                                    "queue-counters-queued-packets": [
+                                        {
+                                            "data": "0"
+                                        }
+                                    ],
+                                    "queue-counters-trans-packets": [
+                                        {
+                                            "data": "0"
+                                        }
+                                    ],
+                                    "queue-counters-total-drop-packets": [
+                                        {
+                                            "data": "0"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "queue-number": [
+                                        {
+                                            "data": "1"
+                                        }
+                                    ],
+                                    "forwarding-class-name": [
+                                        {
+                                            "data": "video"
+                                        }
+                                    ],
+                                    "queue-counters-queued-packets": [
+                                        {
+                                            "data": "0"
+                                        }
+                                    ],
+                                    "queue-counters-trans-packets": [
+                                        {
+                                            "data": "0"
+                                        }
+                                    ],
+                                    "queue-counters-total-drop-packets": [
+                                        {
+                                            "data": "7"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "queue-number": [
+                                        {
+                                            "data": "2"
+                                        }
+                                    ],
+                                    "forwarding-class-name": [
+                                        {
+                                            "data": "bizapp-af3"
+                                        }
+                                    ],
+                                    "queue-counters-queued-packets": [
+                                        {
+                                            "data": "0"
+                                        }
+                                    ],
+                                    "queue-counters-trans-packets": [
+                                        {
+                                            "data": "0"
+                                        }
+                                    ],
+                                    "queue-counters-total-drop-packets": [
+                                        {
+                                            "data": "0"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "ethernet-pcs-statistics": [
+                        {
+                            "attributes": {
+                                "junos:style": "verbose"
+                            },
+                            "bit-error-seconds": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "errored-blocks-seconds": [
+                                {
+                                    "data": "0"
+                                }
+                            ]
+                        }
+                    ],
+                    "ethernet-mac-statistics": [
+                        {
+                            "attributes": {
+                                "junos:style": "verbose"
+                            },
+                            "input-bytes": [
+                                {
+                                    "data": "27631800"
+                                }
+                            ],
+                            "output-bytes": [
+                                {
+                                    "data": "106461976"
+                                }
+                            ],
+                            "input-packets": [
+                                {
+                                    "data": "81270"
+                                }
+                            ],
+                            "output-packets": [
+                                {
+                                    "data": "1267216"
+                                }
+                            ],
+                            "input-unicasts": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "output-unicasts": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "input-broadcasts": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "output-broadcasts": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "input-multicasts": [
+                                {
+                                    "data": "81270"
+                                }
+                            ],
+                            "output-multicasts": [
+                                {
+                                    "data": "1267216"
+                                }
+                            ],
+                            "input-crc-errors": [
+                                {
+                                    "data": "9"
+                                }
+                            ],
+                            "output-crc-errors": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "input-fifo-errors": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "output-fifo-errors": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "input-mac-control-frames": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "output-mac-control-frames": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "input-mac-pause-frames": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "output-mac-pause-frames": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "input-oversized-frames": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "input-jabber-frames": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "input-fragment-frames": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "input-vlan-tagged-frames": [
+                                {
+                                    "data": "0"
+                                }
+                            ],
+                            "input-code-violations": [
+                                {
+                                    "data": "0"
+                                }
+                            ]
+                        }
+                    ],
+                    "ethernet-autonegotiation": [
+                        {
+                            "autonegotiation-status": [
+                                {
+                                    "data": "complete"
+                                }
+                            ],
+                            "link-partner-status": [
+                                {
+                                    "data": "OK"
+                                }
+                            ],
+                            "link-partner-duplexity": [
+                                {
+                                    "data": "full-duplex"
+                                }
+                            ],
+                            "link-partner-speed": [
+                                {
+                                    "data": "1000 Mbps"
+                                }
+                            ],
+                            "flow-control": [
+                                {
+                                    "data": "None"
+                                }
+                            ],
+                            "local-info": [
+                                {
+                                    "local-link-duplexity": [
+                                        {
+                                            "data": "full-duplex"
+                                        }
+                                    ],
+                                    "local-link-speed": [
+                                        {
+                                            "data": "1000 Mbps"
+                                        }
+                                    ],
+                                    "local-flow-control-rx": [
+                                        {
+                                            "data": "None"
+                                        }
+                                    ],
+                                    "local-flow-control-tx": [
+                                        {
+                                            "data": "None"
+                                        }
+                                    ],
+                                    "local-flow-control": [
+                                        {
+                                            "data": "None"
+                                        }
+                                    ],
+                                    "local-remote-fault": [
+                                        {
+                                            "data": "Link OK"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "description": [
+                        {
+                            "data": "uplink to demo-core"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -8,6 +8,7 @@ import { STYLE, colLetter, sheet, workbook } from "../lib/xlsx.js";
 import { resolveSites } from "../lib/scope.js";
 import { POOL_LIMIT, listSites, mistGet, mistGetFull, mistWrite, pool } from "../mist.js";
 import { tokenAccess } from "../lib/access.js";
+import { validateShowCommand } from "../lib/junos-shell.js";
 
 export const HOST = "api.gc2.mist.com";
 
@@ -41,22 +42,34 @@ export function stubMist(routes) {
   return calls;
 }
 
-/** The ctx a tool receives, minus the DOM parts it should not need in tests. */
-export function testCtx({ orgId = "org-1", orgName = "Acme Corp", params = {}, role = "read" } = {}) {
+/**
+ * The ctx a tool receives, minus the DOM parts it should not need in tests.
+ * `shell(siteId, device, command)` stands in for the switch CLI behind
+ * ctx.junosShow: return the parsed JSON a command would give, or throw.
+ */
+export function testCtx({ orgId = "org-1", orgName = "Acme Corp", params = {}, role = "read", shell = null } = {}) {
   const token = "t".repeat(20);
   const ctl = new AbortController();
   const logs = [];
   const writes = [];
+  const shellCalls = [];
   const paged = { host: HOST, token, signal: ctl.signal };
   return {
     // No token: tools are never given it, exactly as in toolbox.js.
     host: HOST, orgId, orgName, orgs: [{ id: orgId, name: orgName }],
-    params, signal: ctl.signal, ctl, logs, writes,
+    params, signal: ctl.signal, ctl, logs, writes, shellCalls,
     access: tokenAccess([{ scope: "org", org_id: orgId, role }], orgId),
     // Records each change, then sends it through the real request path.
     mistWrite: (method, path, body, q) => {
       writes.push({ method, path, body });
       return mistWrite(HOST, token, method, path, body, q);
+    },
+    // Same gate as the real ctx.junosShow; the answer comes from `shell`.
+    junosShow: async (siteId, device, command) => {
+      const cmd = validateShowCommand(command);
+      shellCalls.push({ siteId, device, command: cmd });
+      if (!shell) throw new Error("No CLI in this test.");
+      return shell(siteId, device, cmd);
     },
     mistGet: (p, q, t) => mistGet(HOST, token, p, q, t),
     mistGetFull: (p, q, t) => mistGetFull(HOST, token, p, q, t),

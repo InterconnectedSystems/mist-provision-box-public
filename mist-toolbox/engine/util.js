@@ -37,6 +37,20 @@ export const MIST_REGIONS = [
 
 export const MIST_HOSTS = MIST_REGIONS.map((r) => r.host);
 
+/**
+ * The WebSocket host of each region, in the same order: Mist serves its
+ * streams and device CLI sessions from "api-ws." + the rest of the API host
+ * (api.gc2.mist.com -> api-ws.gc2.mist.com). tests/policy.test.js holds the
+ * toolbox page's CSP to exactly these.
+ */
+export const MIST_WS_HOSTS = MIST_HOSTS.map((h) => h.replace(/^api\./, "api-ws."));
+
+/** The WebSocket host that goes with one API host, or "" if it is not a Mist region. */
+export function wsHostFor(host) {
+  const i = MIST_HOSTS.indexOf(host);
+  return i < 0 ? "" : MIST_WS_HOSTS[i];
+}
+
 /** The region the Python scripts hardcoded, and the console's default. */
 export const DEFAULT_MIST_HOST = "api.gc2.mist.com";
 export const TIMEOUT = 25;

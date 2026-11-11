@@ -11,6 +11,10 @@
 //   * GET-only is now scoped rather than global: the Mist tools stay GET-only,
 //     and POST is confined to the SSR tool, which needs it for /login and for
 //     the one session-count endpoint the Conductor only answers to POST.
+//   * toolbox.html may also open WebSockets, to exactly the 13 Mist "api-ws."
+//     hosts, for read-only switch CLI sessions (ctx.junosShow). Browsers cannot
+//     put the token on a WebSocket; Mist hands back a wss:// URL with its own
+//     short-lived JWT, and mist.js is still the only file that connects.
 //
 // Everything that protects the credential is unchanged, including the absolute
 // ban on persisting anything.
@@ -21,7 +25,7 @@ import test from "node:test";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { MIST_HOSTS } from "../engine/util.js";
+import { MIST_HOSTS, MIST_WS_HOSTS } from "../engine/util.js";
 import { POLICY, detectWrites } from "../lib/toolcheck.js";
 import { BUILTIN_TOOLS } from "../tools/registry.js";
 
@@ -87,11 +91,14 @@ const metaCsp = (html) => {
 const TOKEN_PAGES = ["toolbox.html", "console.html", "docs/view.html"];
 
 test("pages that hold the Mist token may only connect to the Mist regions", async () => {
-  const want = ["'self'", ...MIST_HOSTS.map((h) => `https://${h}`)].join(" ");
+  const https = ["'self'", ...MIST_HOSTS.map((h) => `https://${h}`)];
   for (const page of TOKEN_PAGES) {
     const csp = metaCsp(await readFile(join(root, page), "utf8"));
     assert.ok(csp, `${page} has no CSP <meta>`);
-    assert.equal(csp["connect-src"], want, `${page}: connect-src must be exactly 'self' + MIST_HOSTS, in order`);
+    // Only the toolbox runs tools, so only it may open the CLI WebSockets.
+    const want = (page === "toolbox.html" ? [...https, ...MIST_WS_HOSTS.map((h) => `wss://${h}`)] : https).join(" ");
+    assert.equal(csp["connect-src"], want,
+      `${page}: connect-src must be exactly 'self' + MIST_HOSTS${page === "toolbox.html" ? " + MIST_WS_HOSTS (wss)" : ""}, in order`);
     // Not just fetch: images, frames, fonts and forms could carry the token out too.
     assert.equal(csp["default-src"], "'self'", page);
     assert.equal(csp["img-src"], "'self' data: blob:", page);
@@ -151,16 +158,39 @@ test("mist.js keeps one fetch, with the allowlist and HTTPS checks on it", async
   assert.ok(text.includes('credentials: "omit"'), "cookies must never ride along");
 });
 
+test("MIST_WS_HOSTS is MIST_HOSTS with api. replaced by api-ws., in order", () => {
+  assert.equal(MIST_WS_HOSTS.length, MIST_HOSTS.length);
+  MIST_HOSTS.forEach((h, i) => assert.equal(MIST_WS_HOSTS[i], h.replace(/^api\./, "api-ws.")));
+});
+
+test("mist.js is the only code that opens a WebSocket, and checks where it connects", async () => {
+  for (const f of await shipped([".js"])) {
+    const { path, text } = await read(f);
+    if (path === "mist.js" || path === "lib/toolcheck.js") continue;
+    assert.ok(!/\bnew WebSocket\s*\(/.test(text), `${path} opens a WebSocket; only mist.js may`);
+  }
+  const text = await readFile(join(root, "mist.js"), "utf8");
+  assert.equal((text.match(/new WebSocket\(/g) || []).length, 1, "one WebSocket only, in openDeviceShell");
+  const fn = text.slice(text.indexOf("export async function openDeviceShell"), text.indexOf("new WebSocket("));
+  assert.ok(fn.includes("SHELL_PATH.test(path)"), "the shell POST must be held to the fixed path");
+  assert.ok(fn.includes('url.protocol !== "wss:"'), "wss check missing");
+  assert.ok(fn.includes("url.hostname !== wsHost"), "region WebSocket host check missing");
+  assert.ok(fn.includes('url.pathname.startsWith("/ssh")'), "path check missing");
+  assert.ok(!/log\(|message.*url\.href|\$\{url/.test(fn), "the session URL carries a JWT; never log it or put it in an error");
+});
+
 test("manifest declares no permissions and the exact CSP", async () => {
   const m = JSON.parse(await readFile(join(root, "manifest.json"), "utf8"));
   assert.equal(m.permissions, undefined, "no permissions array: downloads use a Blob anchor");
   assert.equal(m.content_scripts, undefined, "no content scripts");
   assert.equal(m.web_accessible_resources, undefined, "nothing exposed to web pages");
-  // The outer limit: HTTPS only. The pages that hold the Mist token narrow it to
-  // the Mist regions with their own <meta> CSP (tested below); ssr.html, which
-  // must reach a Conductor only the user knows, keeps https:.
+  // The outer limit: HTTPS, plus WebSockets to the Mist regions' api-ws hosts
+  // only. Chrome does not let "https:" cover wss:, so the CLI sockets need the
+  // hosts named here as well as in toolbox.html. The pages narrow this further
+  // with their own <meta> CSP (tested above); ssr.html, which must reach a
+  // Conductor only the user knows, keeps https: and no sockets.
   assert.equal(m.content_security_policy.extension_pages,
-    "script-src 'self'; object-src 'self'; connect-src 'self' https:");
+    `script-src 'self'; object-src 'self'; connect-src 'self' https: ${MIST_WS_HOSTS.map((h) => `wss://${h}`).join(" ")}`);
   assert.equal(m.action.default_popup, undefined, "the action opens a tab, not a popup");
   assert.deepEqual(m.optional_host_permissions, ["https://*/*"],
     "the SSR Conductor host is requested at runtime, not granted up front");

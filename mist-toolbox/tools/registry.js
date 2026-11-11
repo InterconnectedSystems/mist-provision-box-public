@@ -62,6 +62,7 @@ export const BUILTIN_TOOLS = [
   "disconnect-console.js",
   "ip-blocks.js",
   "port-inventory.js",
+  "port-stats-correlator.js",
   "ssid-client-lists.js",
   "ssid-report.js",
   "site-alarms.js",
@@ -87,7 +88,11 @@ export async function loadOne(file, bust) {
   // The "Makes changes" label comes from the declaration or from the source
   // itself, so leaving out `writes: true` cannot hide it.
   const src = await fetch(url, { cache: "no-store" }).then((r) => (r.ok ? r.text() : ""), () => "");
-  return { ...tool, __file: file, __writes: tool.writes === true || detectWrites(src) };
+  // "CLI show commands" is a label, not a permission: any tool may call
+  // ctx.junosShow, and the card says so.
+  return {
+    ...tool, __file: file, __writes: tool.writes === true || detectWrites(src), __cli: /\bjunosShow\s*\(/.test(src),
+  };
 }
 
 /**

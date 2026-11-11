@@ -63,8 +63,12 @@ interaction, when you press **End session**, or whenever the tab closes or
 reloads. `toolbox.html` and `console.html` carry a Content-Security-Policy whose
 `connect-src` is exactly the 13 Mist regions (plus `default-src 'self'`,
 `frame-src 'none'` and `form-action 'none'`), so nothing on those pages can
-reach any other host, by any means. `tests/policy.test.js` keeps that list
-identical to the region drop-down.
+reach any other host, by any means. `toolbox.html` also allows `wss://` to the
+same 13 regions' `api-ws.` hosts, for the read-only switch CLI sessions behind
+`ctx.junosShow`: the token goes only on the HTTPS request that opens a session,
+and the socket authenticates with the short-lived key Mist puts in the session
+address. `tests/policy.test.js` keeps both lists identical to the region
+drop-down, and holds `mist.js` to being the only code that opens a socket.
 
 Every card says **Read-only** or **Makes changes**. A tool that makes changes
 shows a red banner and asks for confirmation, naming the org and the token's
@@ -91,6 +95,7 @@ changes, and requires each to declare `writes: true`.
 | **Wi-Fi Clients Export** | `site-wifi-clients.py` | Site · Org | Mist token + org |
 | **IP Blocks / IRB Report** | `mist_ip_blocks.py` | Site · Org | Mist token + org |
 | **Switch Port Inventory** | `mist_switch_port_inventory.py` | Site · Org | Mist token + org |
+| **Port Stats Correlator** (its own screen: pick ports across switches and sites in hop order; live `show interfaces extensive` counters over Mist's remote shell, with Mist's port stats as the fallback) | none: new | Site · Org | Mist token + org; an admin-level token for the live switch CLI |
 | **SSR Pre/Post Check** | `pre-post-check-gui.py` | SSR Conductor | Conductor URL + username/password (opens in its own tab) |
 
 
@@ -145,12 +150,14 @@ rules and both examples in step with the code.
 ## Layout
 
 ```
-manifest.json          MV3 manifest: 13 Mist hosts, no permissions array, HTTPS-only CSP
+manifest.json          MV3 manifest: 13 Mist hosts, no permissions array, CSP: HTTPS plus
+                       wss:// to the 13 api-ws hosts only
 background.js          opens/focuses the toolbox tab; never sees a credential
 toolbox.html/.css/.js  the shell: credentials, menu, generated forms, run lifecycle
 console.html/.js       the Disconnect Console, v1.4, essentially untouched
 ssr.html/.js           the SSR Pre/Post Check's own tab (ssr/ holds the check)
-mist.js                Mist transport: one fetch, pooling, 429 backoff, mistWrite
+mist.js                Mist transport: one fetch, pooling, 429 backoff, mistWrite, and the one
+                       WebSocket (openDeviceShell, for read-only switch CLI sessions)
 engine/                the disconnect console's correlation engine, DOM-free
 lib/
   zip.js               ZIP writer over the platform's CompressionStream
@@ -158,6 +165,8 @@ lib/
   paginate.js          Mist's two pagination regimes
   subnet.js            IPv4/IPv6 math, replacing Python's ipaddress
   junos.js             shlex.split plus the Junos IRB/VLAN parser
+  junos-shell.js       read-only switch CLI over Mist's remote shell: the show-only gate, the
+                       shell protocol, and Junos `| display json` parsing (ctx.junosShow)
   switchports.js       the port inventory's merge rules
   diff.js              flatten/compute_changes plus difflib's SequenceMatcher
   access.js            what the token may do in the selected org, from GET /self

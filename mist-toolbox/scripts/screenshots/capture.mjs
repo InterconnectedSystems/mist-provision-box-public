@@ -17,7 +17,9 @@ import { tmpdir } from "node:os";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { CONDUCTOR, ORG_ID, PHY_MAC, conductor, mist, setSelfRole } from "./fixtures.mjs";
+import { MIST_WS_HOSTS } from "../../engine/util.js";
+import { startFakeSwitch } from "./fakeswitch.mjs";
+import { CONDUCTOR, ORG_ID, PHY_MAC, VAN_SITE, conductor, mist, setSelfRole, shellSession } from "./fixtures.mjs";
 import { readXlsx, sheetPage } from "./sheetview.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -45,13 +47,35 @@ const extId = [...createHash("sha256").update(extDir).digest("hex").slice(0, 32)
   .map((c) => String.fromCharCode(97 + parseInt(c, 16))).join("");
 const extUrl = (p) => `chrome-extension://${extId}/${p}`;
 
+// ---- Fake switch CLI -------------------------------------------------------------
+//
+// Port Stats Correlator reads counters over each switch's CLI (a WebSocket to
+// the region's api-ws host). A local stand-in switch answers; every Mist api-ws
+// host resolves to it below. Vancouver's two connected switches answer, and
+// van-core-1 picks up CRC errors on every read.
+
+const SWITCH_PORT = 9443;
+const fakeSwitch = await startFakeSwitch({
+  port: SWITCH_PORT,
+  workDir: work,
+  fixturePath: join(root, "tests", "fixtures", "junos-show-interfaces-extensive.json"),
+  switches: {
+    "020000000403": { name: "van-acc-1", mtu: 1514, description: "uplink to van-core-1",
+      grow: { "traffic-statistics/input-bytes": 2400000, "traffic-statistics/output-bytes": 1800000 } },
+    "020000000401": { name: "van-core-1", mtu: 9216, description: "van-acc-1",
+      grow: { "traffic-statistics/input-bytes": 2300000, "ethernet-mac-statistics/input-crc-errors": 6, "input-error-list/input-errors": 6 } },
+  },
+});
+
 // ---- Browser ----------------------------------------------------------------
 
 const browser = spawn(chromium, [
   "--headless=new", "--no-sandbox", "--disable-gpu", "--hide-scrollbars",
   `--remote-debugging-port=${PORT}`, `--user-data-dir=${join(work, "profile")}`,
   `--disable-extensions-except=${extDir}`, `--load-extension=${extDir}`,
-  "--force-color-profile=srgb", `--window-size=${WIDTH},900`, "about:blank",
+  "--force-color-profile=srgb", `--window-size=${WIDTH},900`,
+  `--host-resolver-rules=${MIST_WS_HOSTS.map((h) => `MAP ${h} 127.0.0.1:${SWITCH_PORT}`).join(", ")}`,
+  "--ignore-certificate-errors", "about:blank",
 ], { stdio: ["ignore", "ignore", "pipe"] });
 
 let wsUrl;
@@ -106,13 +130,16 @@ listeners.push(async (msg) => {
   const u = new URL(request.url);
   let hit = null;
   if (u.origin === CONDUCTOR) hit = conductor(request.method, u.pathname, ssrPhase);
-  else if (/(^|\.)mist(-federal)?\.com$/.test(u.hostname)) hit = mist(u.pathname.replace(/^\/api\/v1/, ""), u.searchParams, u.hostname);
+  else if (/(^|\.)mist(-federal)?\.com$/.test(u.hostname)) {
+    const path = u.pathname.replace(/^\/api\/v1/, "");
+    hit = (request.method === "POST" && shellSession(path, u.hostname)) || mist(path, u.searchParams, u.hostname);
+  }
   served.push(`${request.method} ${u.pathname}${hit ? "" : " (404)"}`);
   const body = hit ? JSON.stringify(hit.body) : "";
   const total = hit && Array.isArray(hit.body) ? String(hit.body.length) : null;
   await cmd("Fetch.fulfillRequest", {
     requestId,
-    responseCode: hit ? 200 : 404,
+    responseCode: hit ? hit.status || 200 : 404,
     responseHeaders: [
       { name: "Content-Type", value: "application/json" },
       { name: "Access-Control-Allow-Origin", value: "*" },
@@ -370,6 +397,37 @@ try {
   await grabXlsx("bgp-sessions");
   await shot("09h-bgp-sessions", "BGP Sessions — switch EVPN, WAN-edge BGP and SSR/SRX peer paths, problems first");
 
+  // Port Stats Correlator draws its own screen, and Mist only opens a switch CLI
+  // for an admin token, so sign in as one. Three hops at Vancouver: two read
+  // live over the CLI (fakeswitch.mjs), one disconnected switch on Mist's stats.
+  setSelfRole("admin");
+  await go(extUrl("toolbox.html"));
+  await setValue("#token", "demo-token-not-a-real-credential");
+  await click("#btnConnect");
+  await waitFor("!document.getElementById('orgRow').classList.contains('hidden')", "org list");
+  await waitFor(`document.querySelector('[data-tool="port-stats-correlator"]:not([disabled])')`, "port stats card");
+  await click(`[data-tool="port-stats-correlator"]`);
+  const pscSel = (n) => `#toolHost .params label:nth-child(${n}) select`;
+  await waitFor(`document.querySelector('${pscSel(1)} option[value="${VAN_SITE}"]')`, "port stats sites");
+  for (const [swMac, port] of [["020000000403", "ge-0/0/1"], ["020000000401", "ge-0/0/0"], ["020000000404", "ge-0/0/4"]]) {
+    await setValue(pscSel(1), VAN_SITE);
+    await waitFor(`document.querySelector('${pscSel(2)} option[value="${swMac}"]')`, `switch ${swMac}`);
+    await setValue(pscSel(2), swMac);
+    await waitFor(`[...document.querySelectorAll("#toolHost tr")].some((tr) => tr.cells[1] && tr.cells[1].textContent === "${port}")`, `port ${port}`);
+    await evaluate(`[...document.querySelectorAll("#toolHost tr")].find((tr) => tr.cells[1] && tr.cells[1].textContent === "${port}").querySelector("input").click()`);
+    await evaluate(`[...document.querySelectorAll("#toolHost button")].find((b) => /^Add \\d+ to flow$/.test(b.textContent)).click()`);
+  }
+  await setValue("#toolHost input[type=number]", "2");
+  await waitFor(`(document.getElementById("toolHost").innerText.match(/Change since/g) || []).length >= 3`, "port stats deltas");
+  await sleep(4500);                                   // two more refreshes
+  await shot("09i-port-stats-flow", "Port Stats Correlator — ports picked across switches, in hop order, with each hop's MTU",
+    ["#toolHost > div > .card:nth-child(1)", "#toolHost > div > .card:nth-child(2)"]);
+  await shot("09j-port-stats-live", "Port Stats Correlator — live \"show interfaces extensive\" counters from each switch's CLI; the hop picking up CRC errors in red",
+    ["#toolHost > div > .card:nth-child(3)"]);
+  await evaluate(`[...document.querySelectorAll("#toolHost button")].find((b) => b.textContent === "Download .xlsx").click()`);
+  await grabXlsx("port-stats-correlator");
+  await click("#btnHome");                             // closes the CLI sessions
+
   // SSID Banned / Approved Clients draws its own screen, and only a token that can
   // make changes reaches Push, so sign in again with a write role for it.
   setSelfRole("write");
@@ -377,6 +435,7 @@ try {
   await setValue("#token", "demo-token-not-a-real-credential");
   await click("#btnConnect");
   await waitFor("!document.getElementById('orgRow').classList.contains('hidden')", "org list");
+  await waitFor(`document.querySelector('[data-tool="ssid-client-lists"]:not([disabled])')`, "SSID tool card");
   await click(`[data-tool="ssid-client-lists"]`);
   const bc = (id) => `[data-bc="${id}"]`;
   await waitFor(`document.querySelector('${bc("site")} option[value="site-hq"]')`, "SSID tool sites");
@@ -441,6 +500,7 @@ try {
   await sheetShot("40-xlsx-wifi-clients", "Wi-Fi Clients Export workbook — WiFi_Clients sheet", "wifi-clients", "WiFi_Clients");
   await sheetShot("41-xlsx-ssid", "SSID Report workbook — SSIDs by Site sheet", "ssid-report", "SSIDs by Site");
   await sheetShot("42-xlsx-switch-report", "Switch Software Report workbook — Switches sheet", "switch-report", "Switches");
+  await sheetShot("43-xlsx-port-stats", "Port Stats Correlator workbook — Flow sheet, one row per hop with every counter and its change", "port-stats-correlator", "Flow");
 
   // ---- Adding a tool with an AI assistant ----------------------------------------
   await go(extUrl("docs/view.html?doc=TOOL_PROMPT.md"));
@@ -501,6 +561,7 @@ try {
   process.exitCode = 1;
 } finally {
   ws.close();
+  fakeSwitch.close();
   // Wait for Chromium to let go of its profile before deleting it.
   const exited = new Promise((r) => browser.once("exit", r));
   browser.kill();
