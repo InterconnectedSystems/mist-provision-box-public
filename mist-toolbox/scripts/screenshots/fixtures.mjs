@@ -7,7 +7,7 @@
 export const ORG_ID = "demo-org";
 export const CONDUCTOR = "https://conductor.example.net";
 // Vancouver's id is UUID-shaped: the toolbox only opens a switch CLI session
-// (Port Stats Correlator) for real Mist site and device ids.
+// (Flow Path Analyzer) for real Mist site and device ids.
 export const VAN_SITE = "0d6a1b2c-0000-4000-8000-00000000040a";
 
 const SITES = [
@@ -340,7 +340,46 @@ const GATEWAYS = [
   { site: "0d6a1b2c-0000-4000-8000-00000000040a", name: "van-ssr", model: "SSR130", mac: mac(0x704) },
   { site: "site-cgy", name: "cgy-ssr", model: "SSR120", mac: mac(0x705) },
 ];
-const gatewayStats = (gw) => ({ type: "gateway", status: "connected", site_id: gw.site, name: gw.name, model: gw.model, mac: gw.mac });
+// Each WAN edge's health and WAN interface (Flow Path Analyzer's health strip).
+const ISPS = ["Example Telecom", "Sample Fibre", "Demo Cable", "Placeholder Networks", "Example Telecom"];
+const gatewayStats = (gw, i = GATEWAYS.indexOf(gw)) => ({
+  type: "gateway", status: "connected", site_id: gw.site, name: gw.name, model: gw.model, mac: gw.mac,
+  id: `00000000-0000-0000-1000-${gw.mac}`, version: gw.model.startsWith("SRX") ? "23.4R2-S3" : "6.3.4-r1", uptime: 1814400,
+  config_status: "synced", ext_ip: `203.0.113.${10 + i}`,
+  cpu_stat: { idle: gw === GATEWAYS[3] ? 38 : 81 }, memory_stat: { usage: gw === GATEWAYS[3] ? 71 : 46 },
+  ...(gw.model.startsWith("SRX")
+    ? { spu_stat: [{ spu_cpu: 14, spu_current_session: 5300, spu_max_session: 64000 }], module_stat: [] }
+    : { module_stat: [{ network_resources: [{ type: "FIB", count: 1240, limit: 22608 }, { type: "FLOW", count: gw === GATEWAYS[3] ? 214000 : 41000, limit: 262144 }] }] }),
+  route_summary_stats: { total_routes: 310, max_unicast_routes_supported: 16000 },
+  if_stat: {
+    "ge-0/0/0.0": { port_id: "ge-0/0/0", port_usage: "wan", wan_name: "wan0", wan_type: "broadband", up: true,
+      ips: [`203.0.113.${10 + i}/30`], nat_addresses: [`203.0.113.${10 + i}`], servp_info: { org: ISPS[i], asn: String(64500 + i) } },
+    "ge-0/0/1.0": { port_id: "ge-0/0/1", port_usage: "lan", network_name: "corp", up: true, ips: [`10.${i + 1}0.0.1/24`] },
+  },
+});
+
+/** A WAN edge's ports, as Mist's port stats give them: WAN ports carry latency, jitter and loss. */
+function gatewayPorts(gw) {
+  const t = liveNow();
+  const tick = Math.floor(Date.now() / 1000);
+  const busy = gw === GATEWAYS[3];
+  return [
+    { port_id: "ge-0/0/0", port_usage: "wan", up: true, speed: 1000, full_duplex: true, rx_bytes: 5e9 + tick * 520, tx_bytes: 3e9 + tick * 390,
+      rx_pkts: 4e6 + tick, tx_pkts: 3e6 + tick, rx_bps: 4200000, tx_bps: 3100000, rx_errors: 0, tx_errors: 0,
+      latency: busy ? 64 : 18, jitter: busy ? 9.5 : 1.8, loss: busy ? 1.8 : 0.1, timestamp: t },
+    { port_id: "ge-0/0/1", port_usage: "lan", up: true, speed: 10000, full_duplex: true, rx_bytes: 3e9 + tick * 390, tx_bytes: 5e9 + tick * 520,
+      rx_pkts: 3e6 + tick, tx_pkts: 4e6 + tick, rx_bps: 3100000, tx_bps: 4200000, rx_errors: 0, tx_errors: 0,
+      neighbor_mac: busy ? mac(0x401) : "", neighbor_system_name: busy ? "van-core-1" : "", neighbor_port_desc: busy ? "ge-0/0/0" : "", timestamp: t },
+    { port_id: "ge-0/0/2", port_usage: "lan", up: false, speed: 0, timestamp: t },
+  ].map((p) => ({ ...p, mac: gw.mac, site_id: gw.site }));
+}
+
+/** Mist's WAN SLEs for one WAN edge over 24 h: a dip in WAN link health. */
+function gatewaySle(metric) {
+  const deg = metric === "wan-link-health" ? [0, 0, 420, 180, 0, 0] : [0, 0, 0, 30, 0, 0];
+  return { sle: { samples: { total: deg.map(() => 3600), degraded: deg, value: [] } },
+    classifiers: [{ name: "network-jitter", samples: { degraded: deg } }, { name: "isp-reachability", samples: { degraded: deg.map(() => 0) } }] };
+}
 
 const bgpRow = (dev, site, o) => ({ mac: dev, site_id: site, vrf_name: "default", local_as: 65010, timestamp: NOW - 60, up: true,
   state: "established", rx_routes: 42, tx_routes: 18, rx_pkts: 182340, tx_pkts: 181977, flap_count: 0, uptime: 1814400, ...o });
@@ -413,7 +452,7 @@ const ALARMS = {
 
 /** Answer one Mist API GET. Returns { status, body } or null for "not found". */
 /**
- * POST /sites/{site}/devices/{id}/shell: the CLI session Port Stats Correlator
+ * POST /sites/{site}/devices/{id}/shell: the CLI session Flow Path Analyzer
  * opens. Connected Vancouver switches get a wss:// address on the region's
  * api-ws host, which capture.mjs points at fakeswitch.mjs; the address's jwt
  * names the switch. A disconnected switch gets the 404 Mist gives.
@@ -445,10 +484,21 @@ export function mist(path, query, host = "api.mist.com") {
     return { body: { results: rows, total: rows.length } };
   }
   if (path === `/orgs/${ORG_ID}/stats/devices`) {
-    return { body: query.get("type") === "gateway" ? GATEWAYS.map(gatewayStats) : SWITCHES.map(switchStats) };
+    return { body: query.get("type") === "gateway" ? GATEWAYS.map((g) => gatewayStats(g)) : SWITCHES.map(switchStats) };
   }
   if (path === `/orgs/${ORG_ID}/stats/bgp_peers/search`) return { body: { results: BGP_PEERS, total: BGP_PEERS.length } };
-  if (path === `/orgs/${ORG_ID}/stats/vpn_peers/search`) return { body: { results: VPN_PEERS, total: VPN_PEERS.length } };
+  if (path === `/orgs/${ORG_ID}/stats/vpn_peers/search`) {
+    // Flow Path Analyzer asks per WAN edge and shows how fresh each path is.
+    const rows = query.get("mac") ? VPN_PEERS.filter((p) => p.mac === query.get("mac")).map((p) => ({ ...p, last_seen: liveNow() - 30 })) : VPN_PEERS;
+    return { body: { results: rows, total: rows.length } };
+  }
+  if (path === `/orgs/${ORG_ID}/stats/tunnels/search`) return { body: { results: [], total: 0 } };
+  if ((r = m(/^\/sites\/([^/]+)\/stats\/devices\/00000000-0000-0000-1000-([0-9a-f]{12})$/))) {
+    const gw = GATEWAYS.find((g) => g.site === r[1] && g.mac === r[2]);
+    return gw ? { body: gatewayStats(gw) } : null;
+  }
+  if ((r = m(/^\/sites\/[^/]+\/sle\/gateway\/[^/]+\/metrics$/))) return { body: { enabled: ["wan-link-health", "gateway-health"], supported: ["wan-link-health", "gateway-health"] } };
+  if ((r = m(/^\/sites\/[^/]+\/sle\/gateway\/[^/]+\/metric\/([^/]+)\/summary-trend$/))) return { body: gatewaySle(r[1]) };
   if (path === `/orgs/${ORG_ID}/stats/ports/search`) {
     const rows = SWITCHES.flatMap((sw) => switchStats(sw).ports.map((p) => ({ ...p, mac: sw.mac, site_id: sw.site })));
     return { body: { results: rows, total: rows.length } };
@@ -457,6 +507,7 @@ export function mist(path, query, host = "api.mist.com") {
   if ((r = m(/^\/sites\/([^/]+)\/stats\/clients$/))) return { body: CLIENTS[r[1]] || [] };
   if ((r = m(/^\/sites\/([^/]+)\/stats\/devices$/))) {
     if (query.get("type") === "ap") return { body: r[1] === PHY_SITE ? apStats() : [] };
+    if (query.get("type") === "gateway") return { body: GATEWAYS.filter((g) => g.site === r[1]).map((g) => gatewayStats(g)) };
     return { body: SWITCHES.filter((s) => s.site === r[1]).map(switchStats) };
   }
   if (path === `/orgs/${ORG_ID}/networktemplates`) return { body: SWITCH_TEMPLATES };
@@ -484,6 +535,10 @@ export function mist(path, query, host = "api.mist.com") {
     return body ? { body } : null;
   }
   if ((r = m(/^\/sites\/([^/]+)\/stats\/ports\/search$/))) {
+    if (query.get("device_type") === "gateway") {
+      const rows = GATEWAYS.filter((g) => g.site === r[1] && (!query.get("mac") || g.mac === query.get("mac"))).flatMap(gatewayPorts);
+      return { body: { results: rows, total: rows.length } };
+    }
     const rows = SWITCHES.filter((s) => s.site === r[1]).flatMap((sw) => switchStats(sw).ports.map((p) => ({ ...p, mac: sw.mac })));
     return { body: { results: rows, total: rows.length } };
   }

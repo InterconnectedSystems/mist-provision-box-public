@@ -49,7 +49,7 @@ const extUrl = (p) => `chrome-extension://${extId}/${p}`;
 
 // ---- Fake switch CLI -------------------------------------------------------------
 //
-// Port Stats Correlator reads counters over each switch's CLI (a WebSocket to
+// Flow Path Analyzer reads counters over each switch's CLI (a WebSocket to
 // the region's api-ws host). A local stand-in switch answers; every Mist api-ws
 // host resolves to it below. Vancouver's two connected switches answer, and
 // van-core-1 picks up CRC errors on every read.
@@ -397,35 +397,55 @@ try {
   await grabXlsx("bgp-sessions");
   await shot("09h-bgp-sessions", "BGP Sessions — switch EVPN, WAN-edge BGP and SSR/SRX peer paths, problems first");
 
-  // Port Stats Correlator draws its own screen, and Mist only opens a switch CLI
-  // for an admin token, so sign in as one. Three hops at Vancouver: two read
-  // live over the CLI (fakeswitch.mjs), one disconnected switch on Mist's stats.
+  // Flow Path Analyzer draws its own screen, and Mist only opens a switch CLI
+  // for an admin token, so sign in as one. The flow at Vancouver: two switch
+  // ports read live over the CLI (fakeswitch.mjs), the SSR's LAN and WAN ports
+  // from Mist's stats, then "Find next hop" adds the SVR peer path to HQ and
+  // the far SSR's WAN port.
   setSelfRole("admin");
   await go(extUrl("toolbox.html"));
   await setValue("#token", "demo-token-not-a-real-credential");
   await click("#btnConnect");
   await waitFor("!document.getElementById('orgRow').classList.contains('hidden')", "org list");
-  await waitFor(`document.querySelector('[data-tool="port-stats-correlator"]:not([disabled])')`, "port stats card");
-  await click(`[data-tool="port-stats-correlator"]`);
-  const pscSel = (n) => `#toolHost .params label:nth-child(${n}) select`;
-  await waitFor(`document.querySelector('${pscSel(1)} option[value="${VAN_SITE}"]')`, "port stats sites");
-  for (const [swMac, port] of [["020000000403", "ge-0/0/1"], ["020000000401", "ge-0/0/0"], ["020000000404", "ge-0/0/4"]]) {
-    await setValue(pscSel(1), VAN_SITE);
-    await waitFor(`document.querySelector('${pscSel(2)} option[value="${swMac}"]')`, `switch ${swMac}`);
-    await setValue(pscSel(2), swMac);
+  await waitFor(`document.querySelector('[data-tool="flow-path-analyzer"]:not([disabled])')`, "flow path card");
+  await click(`[data-tool="flow-path-analyzer"]`);
+  const fpaSel = (n) => `#toolHost .params label:nth-child(${n}) select`;
+  const fpaBtn = (text) => `[...document.querySelectorAll("#toolHost button")].find((b) => b.textContent.trim() === ${JSON.stringify(text)})`;
+  await waitFor(`document.querySelector('${fpaSel(1)} option[value="${VAN_SITE}"]')`, "flow path sites");
+  const addHop = async (type, devMac, port) => {
+    await setValue(fpaSel(1), VAN_SITE);
+    await setValue(fpaSel(2), type);
+    await waitFor(`document.querySelector('${fpaSel(3)} option[value="${devMac}"]')`, `device ${devMac}`);
+    await setValue(fpaSel(3), devMac);
     await waitFor(`[...document.querySelectorAll("#toolHost tr")].some((tr) => tr.cells[1] && tr.cells[1].textContent === "${port}")`, `port ${port}`);
     await evaluate(`[...document.querySelectorAll("#toolHost tr")].find((tr) => tr.cells[1] && tr.cells[1].textContent === "${port}").querySelector("input").click()`);
     await evaluate(`[...document.querySelectorAll("#toolHost button")].find((b) => /^Add \\d+ to flow$/.test(b.textContent)).click()`);
-  }
-  await setValue("#toolHost input[type=number]", "2");
-  await waitFor(`(document.getElementById("toolHost").innerText.match(/Change since/g) || []).length >= 3`, "port stats deltas");
-  await sleep(4500);                                   // two more refreshes
-  await shot("09i-port-stats-flow", "Port Stats Correlator — ports picked across switches, in hop order, with each hop's MTU",
+  };
+  const addNext = async (re) => {
+    const find = `[...document.querySelectorAll("#toolHost button")].find((b) => b.textContent === "Add" && ${re}.test(b.parentElement.innerText))`;
+    await waitFor(find, `next hop ${re}`);
+    await evaluate(`${find}.click()`);
+  };
+  await addHop("switch", "020000000403", "ge-0/0/1");
+  await addHop("switch", "020000000401", "ge-0/0/0");
+  await addHop("gateway", "020000000704", "ge-0/0/1");
+  await addHop("gateway", "020000000704", "ge-0/0/0");
+  await evaluate(`${fpaBtn("Find next hop →")}.click()`);
+  await waitFor(`/Peer path/.test(document.getElementById("toolHost").innerText)`, "next hop options");
+  await shot("09i-flow-path-next-hop", "Flow Path Analyzer — switch and WAN edge ports in hop order; \"Find next hop\" offers the SSR's peer path and the far WAN edge's port",
     ["#toolHost > div > .card:nth-child(1)", "#toolHost > div > .card:nth-child(2)"]);
-  await shot("09j-port-stats-live", "Port Stats Correlator — live \"show interfaces extensive\" counters from each switch's CLI; the hop picking up CRC errors in red",
+  await addNext("/Peer path/");                        // adds the path and hq-ssr's WAN port
+  await waitFor(`/hq-ssr/.test(document.querySelector("#toolHost > div > .card:nth-child(2)").innerText)`, "far WAN edge hop");
+  await setValue("#toolHost input[type=number]", "2");
+  await waitFor(`(document.getElementById("toolHost").innerText.match(/Change since/g) || []).length >= 2`, "flow path deltas");
+  await evaluate(`${fpaBtn("24 h WAN health")}.click()`);
+  await waitFor(`/Last 24 h/i.test(document.getElementById("toolHost").innerText)`, "WAN SLE");
+  await sleep(4500);                                   // two more refreshes
+  await shot("09j-flow-path-live", "Flow Path Analyzer — the verdict names the hop to look at first; live CLI counters, WAN loss, latency and jitter, WAN edge health and the peer path, hop by hop",
     ["#toolHost > div > .card:nth-child(3)"]);
-  await evaluate(`[...document.querySelectorAll("#toolHost button")].find((b) => b.textContent === "Download .xlsx").click()`);
-  await grabXlsx("port-stats-correlator");
+  await evaluate(`${fpaBtn("Download .xlsx")}.click()`);
+  await grabXlsx("flow-path-analyzer");
+  await click("#btnHome");                             // closes the CLI sessions
   await click("#btnHome");                             // closes the CLI sessions
 
   // SSID Banned / Approved Clients draws its own screen, and only a token that can
@@ -500,7 +520,7 @@ try {
   await sheetShot("40-xlsx-wifi-clients", "Wi-Fi Clients Export workbook — WiFi_Clients sheet", "wifi-clients", "WiFi_Clients");
   await sheetShot("41-xlsx-ssid", "SSID Report workbook — SSIDs by Site sheet", "ssid-report", "SSIDs by Site");
   await sheetShot("42-xlsx-switch-report", "Switch Software Report workbook — Switches sheet", "switch-report", "Switches");
-  await sheetShot("43-xlsx-port-stats", "Port Stats Correlator workbook — Flow sheet, one row per hop with every counter and its change", "port-stats-correlator", "Flow");
+  await sheetShot("43-xlsx-flow-path", "Flow Path Analyzer workbook — Verdict sheet, the findings hop by hop", "flow-path-analyzer", "Verdict");
 
   // ---- Adding a tool with an AI assistant ----------------------------------------
   await go(extUrl("docs/view.html?doc=TOOL_PROMPT.md"));

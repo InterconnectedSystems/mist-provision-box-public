@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Mist Provision Box",
-  "version": "1.6.0",
-  "description": "Juniper Mist and SSR tools, read-only by default: switch, Wi-Fi and alarm reports, disconnect RCA, SSR pre/post checks.",
+  "version": "1.7.0",
+  "description": "Juniper Mist and SSR tools, read-only by default: switch, Wi-Fi and alarm reports, flow paths, disconnect RCA, SSR pre/post checks.",
   "minimum_chrome_version": "116",
   "background": { "service_worker": "background.js", "type": "module" },
   "action": {
