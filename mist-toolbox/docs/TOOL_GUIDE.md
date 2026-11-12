@@ -184,7 +184,10 @@ happened. Catch it per site if one failing site shouldn't stop the report.
 
 Mist's REST stats are what each switch reports about once a minute, and they
 leave out most of what `show interfaces extensive` prints (CRC, FIFO and MTU
-errors, runts, per-queue drops…). `ctx.junosShow` asks the switch directly:
+errors, runts, per-queue drops…). `ctx.junosShow` asks the switch directly.
+It works the same on any Junos device Mist manages, such as an SRX WAN edge
+(the built-in Flow Path Analyzer reads switches and SRX this way); SSR is not
+Junos, so read SSR through Mist's stats instead:
 
 ```js
 const json = await ctx.junosShow(site.id, sw.mac, "show interfaces extensive ge-0/0/1");
